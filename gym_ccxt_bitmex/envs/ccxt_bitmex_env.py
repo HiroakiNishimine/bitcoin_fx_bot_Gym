@@ -7,7 +7,6 @@ from gym.utils import seeding
 import numpy as np
 import math
 from ccxt_bitmex_util1 import get_State, order_Buy, order_Sell
-from time import sleep
 import datetime
 
 import logging
@@ -23,7 +22,7 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
 
     def __init__(self):
 
-        self.action_space = spaces.Discrete(3)
+        self.action_space = spaces.Discrete(7)
         self.observation_space = spaces.Box(low=-float('inf'), high=float('inf'), shape=(38,))
 
         self.status = None
@@ -39,7 +38,6 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
 
         step = step + 1
         observation = get_State()
-        sleep(2)
         Bid_price, Ask_price = observation[5], observation[3]
         self._take_action(action, Bid_price, Ask_price)
         self.status = 1
@@ -64,6 +62,22 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
         elif action == 2:
             print("action == sell")
             order_Sell(symbol='BTC/USD', type='limit', side='sell', amount=5.0, price=Ask_price)
+        
+        elif action == 3:
+            print("action == buy +")
+            order_Buy(symbol='BTC/USD', type='limit', side='buy', amount=5.0, price=Bid_price+0.5)
+        
+        elif action == 4:
+            print("action == buy -")
+            order_Buy(symbol='BTC/USD', type='limit', side='buy', amount=5.0, price=Bid_price-0.5)
+
+        elif action == 5:
+            print("action == sell +")
+            order_Buy(symbol='BTC/USD', type='limit', side='sell', amount=5.0, price=Ask_price+0.5)
+
+        elif action == 6:
+            print("action == sell -")
+            order_Buy(symbol='BTC/USD', type='limit', side='sell', amount=5.0, price=Ask_price-0.5)
 
 
     def _get_reward(self, observation, step):

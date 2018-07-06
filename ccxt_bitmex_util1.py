@@ -45,8 +45,6 @@ def get_State():
     sleep(1)
     obj_Orderbook = getJson('orderbook')
     sleep(1)
-    obj_Orderbook_1 = getJson('orderbook_1')
-    sleep(1)
 
     # obj_Balanceからとれる情報取得
     free_XBT = obj_Balance['BTC']['free'] # free XBT
@@ -80,8 +78,10 @@ def get_State():
 
     # obj_Orderbookからとれる情報
     # Ask # Bid
-    [[Ask_price, Ask_amount]] = obj_Orderbook_1['asks']
-    [[Bid_price, Bid_amount]] = obj_Orderbook_1['bids']
+    Ask_price = obj_Orderbook['asks'][0][0]
+    Ask_amount = obj_Orderbook['asks'][0][1]
+    Bid_price = obj_Orderbook['bids'][0][0]
+    Bid_amount = obj_Orderbook['bids'][0][1]
 
     # http://www.geisya.or.jp/~mwm48961/electro/histogram2.htm
     # 板情報のaskの平均

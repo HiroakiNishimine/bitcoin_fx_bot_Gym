@@ -55,9 +55,6 @@ def getJson(label):
        
        elif label == "orderbook":
            return bitmex().fetch_order_book(Symbol, limit=10000)
-
-       elif label == "orderbook_1":
-           return bitmex().fetch_order_book(Symbol, limit=1)
        
        else:
            return None

@@ -32,87 +32,97 @@ def order_Sell(symbol='BTC/USD', type='limit', side='sell', amount=5.0, price=10
 
 def get_State():
 
+    # getJsonErrorフラグの初期化
+    flg_getJsonError = 0
+
     # #JSON取得
-    obj_Ticker = getJson('ticker')
+    obj_Ticker, flg_getJsonError = getJson('ticker', flg_getJsonError)
     sleep(1)
-    obj_Markets = getJson('markets')
+    obj_Markets, flg_getJsonError = getJson('markets', flg_getJsonError)
     sleep(1)
-    obj_Balance = getJson('balance')
+    obj_Balance, flg_getJsonError = getJson('balance', flg_getJsonError)
     sleep(1)
-    obj_Position = getJson('position')
+    obj_Position, flg_getJsonError = getJson('position', flg_getJsonError)
     sleep(1)
-    obj_Pending = getJson('pending')
+    obj_Pending, flg_getJsonError = getJson('pending', flg_getJsonError)
     sleep(1)
-    obj_Orderbook = getJson('orderbook')
+    obj_Orderbook, flg_getJsonError = getJson('orderbook', flg_getJsonError)
     sleep(1)
 
-    # obj_Balanceからとれる情報取得
-    free_XBT = obj_Balance['BTC']['free'] # free XBT
-    used_XBT = obj_Balance['BTC']['used'] # used XBT
-    total_XBT = obj_Balance['BTC']['total'] # total XBT
+    # ポジション情報の取得
+    BuyCount  = getPositions(obj_Position,'XBTUSD', "BUY")
+    sleep(1)
+    SellCount = getPositions(obj_Position,'XBTUSD', "SELL")
+    sleep(1)
+
+    if flg_getJsonError == 0:
+        # obj_Balanceからとれる情報取得
+        free_XBT = obj_Balance['BTC']['free'] # free XBT
+        used_XBT = obj_Balance['BTC']['used'] # used XBT
+        total_XBT = obj_Balance['BTC']['total'] # total XBT
+
+        # obj_Tickerからとれる情報取得
+        open = obj_Ticker['info']['open']
+        high = obj_Ticker['info']['high']
+        low = obj_Ticker['info']['low']
+        close = obj_Ticker['info']['close']
+        trades = obj_Ticker['info']['trades']
+        volume = obj_Ticker['info']['volume']
+        vwap = obj_Ticker['info']['vwap']
+        lastSize = obj_Ticker['info']['lastSize']
+        turnover = obj_Ticker['info']['turnover']
+        homeNotional = obj_Ticker['info']['homeNotional']
+        timestamp = obj_Ticker['timestamp']
+        last = obj_Ticker['last']
+        change = obj_Ticker['change']
+        percentage = obj_Ticker['percentage']
+        average = obj_Ticker['average']
+
+        # obj_Orderbookからとれる情報
+        # Ask # Bid
+        Ask_price = obj_Orderbook['asks'][0][0]
+        Ask_amount = obj_Orderbook['asks'][0][1]
+        Bid_price = obj_Orderbook['bids'][0][0]
+        Bid_amount = obj_Orderbook['bids'][0][1]
+
+        # http://www.geisya.or.jp/~mwm48961/electro/histogram2.htm
+        # 板情報のaskの平均
+        asks2d = np.array(obj_Orderbook['asks'])
+        f = asks2d[:, 1:]
+        f = np.reshape(f, (-1,))
+        Orderbook_asks_mean = np.sum(np.prod(asks2d, axis=1)) / np.sum(f)
+        # 板情報のaskの分散
+        n = np.sum(f)
+        m = asks2d[:,0]
+        m = np.reshape(m, (-1,))
+        m2 = np.square(m)
+        Orderbook_asks_variance = ( sum(m2*f) / n ) - np.square(Orderbook_asks_mean)
+        # 板情報のaskの標準偏差
+        Orderbook_asks_std = np.sqrt(Orderbook_asks_variance)
+
+        # 板情報のbidsの平均
+        bids2d = np.array(obj_Orderbook['bids'])
+        f = bids2d[:, 1:]
+        f = np.reshape(f, (-1,))
+        Orderbook_bids_mean = np.sum(np.prod(bids2d, axis=1)) / np.sum(f)
+        # 板情報のaskの分散
+        n = np.sum(f)
+        m = bids2d[:,0]
+        m = np.reshape(m, (-1,))
+        m2 = np.square(m)
+        Orderbook_bids_variance = ( sum(m2*f) / n ) - np.square(Orderbook_bids_mean)
+        # 板情報のaskの標準偏差
+        Orderbook_bids_std = np.sqrt(Orderbook_bids_variance)
 
     # time情報
     date = datetime.datetime.now()
 
-    # obj_Tickerからとれる情報取得
-    open = obj_Ticker['info']['open']
-    high = obj_Ticker['info']['high']
-    low = obj_Ticker['info']['low']
-    close = obj_Ticker['info']['close']
-    trades = obj_Ticker['info']['trades']
-    volume = obj_Ticker['info']['volume']
-    vwap = obj_Ticker['info']['vwap']
-    lastSize = obj_Ticker['info']['lastSize']
-    turnover = obj_Ticker['info']['turnover']
-    homeNotional = obj_Ticker['info']['homeNotional']
-    timestamp = obj_Ticker['timestamp']
-    last = obj_Ticker['last']
-    change = obj_Ticker['change']
-    percentage = obj_Ticker['percentage']
-    average = obj_Ticker['average']
+    state = (free_XBT, used_XBT, total_XBT, Ask_price, Ask_amount, Bid_price, Bid_amount, date.year, date.month, date.day, date.hour, date.minute, date.second, date.microsecond, date.weekday(), open, high, low, close, trades, volume, vwap, lastSize,
+     turnover, homeNotional, timestamp, last, change, percentage, average, Orderbook_asks_mean, Orderbook_asks_variance, Orderbook_asks_std, Orderbook_bids_mean, Orderbook_bids_variance, Orderbook_bids_std, BuyCount, SellCount, flg_getJsonError)
+    
+    print("state : {}".format(state))
 
-    # ポジション情報の取得
-    BuyCount  = getPositions(obj_Position,'XBTUSD', "BUY")
-    SellCount = getPositions(obj_Position,'XBTUSD', "SELL")
-
-
-    # obj_Orderbookからとれる情報
-    # Ask # Bid
-    Ask_price = obj_Orderbook['asks'][0][0]
-    Ask_amount = obj_Orderbook['asks'][0][1]
-    Bid_price = obj_Orderbook['bids'][0][0]
-    Bid_amount = obj_Orderbook['bids'][0][1]
-
-    # http://www.geisya.or.jp/~mwm48961/electro/histogram2.htm
-    # 板情報のaskの平均
-    asks2d = np.array(obj_Orderbook['asks'])
-    f = asks2d[:, 1:]
-    f = np.reshape(f, (-1,))
-    Orderbook_asks_mean = np.sum(np.prod(asks2d, axis=1)) / np.sum(f)
-    # 板情報のaskの分散
-    n = np.sum(f)
-    m = asks2d[:,0]
-    m = np.reshape(m, (-1,))
-    m2 = np.square(m)
-    Orderbook_asks_variance = ( sum(m2*f) / n ) - np.square(Orderbook_asks_mean)
-    # 板情報のaskの標準偏差
-    Orderbook_asks_std = np.sqrt(Orderbook_asks_variance)
-
-    # 板情報のbidsの平均
-    bids2d = np.array(obj_Orderbook['bids'])
-    f = bids2d[:, 1:]
-    f = np.reshape(f, (-1,))
-    Orderbook_bids_mean = np.sum(np.prod(bids2d, axis=1)) / np.sum(f)
-    # 板情報のaskの分散
-    n = np.sum(f)
-    m = bids2d[:,0]
-    m = np.reshape(m, (-1,))
-    m2 = np.square(m)
-    Orderbook_bids_variance = ( sum(m2*f) / n ) - np.square(Orderbook_bids_mean)
-    # 板情報のaskの標準偏差
-    Orderbook_bids_std = np.sqrt(Orderbook_bids_variance)
-
-    return (free_XBT, used_XBT, total_XBT, Ask_price, Ask_amount, Bid_price, Bid_amount, date.year, date.month, date.day, date.hour, date.minute, date.second, date.microsecond, date.weekday(), open, high, low, close, trades, volume, vwap, lastSize, turnover, homeNotional, timestamp, last, change, percentage, average, Orderbook_asks_mean, Orderbook_asks_variance, Orderbook_asks_std, Orderbook_bids_mean, Orderbook_bids_variance, Orderbook_bids_std, BuyCount, SellCount)
+    return state
 
 
 #    #Buy Order

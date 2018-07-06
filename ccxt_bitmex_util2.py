@@ -35,32 +35,34 @@ def bitmex():
   return bitmex
 
 #API
-def getJson(label):
+def getJson(label, flg_getJsonError):
    
    try:
        if label == 'ticker':
-           return bitmex().fetch_ticker(Symbol)
+           return bitmex().fetch_ticker(Symbol), flg_getJsonError
 
        elif label == 'markets':
-           return bitmex().fetch_markets()
+           return bitmex().fetch_markets(), flg_getJsonError
 
        elif label == 'balance':
-           return bitmex().fetch_balance()
+           return bitmex().fetch_balance(), flg_getJsonError
 
        elif label == "position":
-           return bitmex().private_get_position()
+           return bitmex().private_get_position(), flg_getJsonError
 
        elif label == "pending":
-           return bitmex().fetch_open_orders()
+           return bitmex().fetch_open_orders(), flg_getJsonError
        
        elif label == "orderbook":
-           return bitmex().fetch_order_book(Symbol, limit=10000)
-       
+           return bitmex().fetch_order_book(Symbol, limit=10000), flg_getJsonError
+
        else:
            return None
            
    except Exception as e:
        print(str(TimeCurrent()), " Exception => Get Json: ", label, str(e))
+       flg_getJsonError = flg_getJsonError + 1
+       return None, flg_getJsonError
 
 #Price
 def getPrice(json_obj, label):
@@ -251,11 +253,16 @@ def AccountInfo(obj_balance, bid):
 
 #発注
 def NewOrder(Order_Symbol, Order_Type, Order_Side, Amount, Price):
-   print("amount : {}".format(Amount))
-   # Amount USD分、Price USDで購入 or 売却 
-   res = bitmex().create_order(Order_Symbol, type=Order_Type, side=Order_Side, amount=Amount, price=Price)
-   
-   return res
+    try:
+        print("amount : {}".format(Amount))
+        # Amount USD分、Price USDで購入 or 売却 
+        res = bitmex().create_order(Order_Symbol, type=Order_Type, side=Order_Side, amount=Amount, price=Price)
+        return res
+
+    except Exception as e:
+        print(TimeCurrent(), " Exception => NewOrder: ", str(e))
+        return 0
+
 
 #オーダーのキャンセル
 def CancelPendingOrders(obj_Pending, Symbol):

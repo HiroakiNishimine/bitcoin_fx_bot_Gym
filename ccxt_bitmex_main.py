@@ -23,10 +23,10 @@ nb_actions = env.action_space.n
 # Next, we build a very simple model.
 model = Sequential()
 model.add(Flatten(input_shape=(1,) + env.observation_space.shape))
-model.add(Dense(38))
+model.add(Dense(39))
 model.add(LeakyReLU(alpha=0.3))
 model.add(BatchNormalization(momentum=0.8))
-model.add(Dense(26))
+model.add(Dense(27))
 model.add(LeakyReLU(alpha=0.3))
 model.add(BatchNormalization(momentum=0.8))
 model.add(Dense(14))

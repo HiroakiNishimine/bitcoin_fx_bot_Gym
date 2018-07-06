@@ -23,7 +23,7 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
     def __init__(self):
 
         self.action_space = spaces.Discrete(7)
-        self.observation_space = spaces.Box(low=-float('inf'), high=float('inf'), shape=(38,))
+        self.observation_space = spaces.Box(low=-float('inf'), high=float('inf'), shape=(39,))
 
         self.status = None
         self.seed()
@@ -94,7 +94,7 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
         return reward
 
     def reset(self):
-        # self.state = self.np_random.uniform(low=-0.05, high=0.05, size=(38,))
+        # self.state = self.np_random.uniform(low=-0.05, high=0.05, size=(39,))
         global start_total_XBT
         self.state = get_State()
         start_total_XBT = self.state[0]

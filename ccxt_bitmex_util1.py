@@ -5,6 +5,7 @@ from pprint import pprint
 from ccxt_bitmex_util2 import *
 import numpy as np
 import datetime
+from time import sleep
 
 #Tickerの取得
 #ticker = bitmex().fetch_ticker('BTC/USD')
@@ -33,12 +34,19 @@ def get_State():
 
     # #JSON取得
     obj_Ticker = getJson('ticker')
+    sleep(1)
     obj_Markets = getJson('markets')
+    sleep(1)
     obj_Balance = getJson('balance')
+    sleep(1)
     obj_Position = getJson('position')
+    sleep(1)
     obj_Pending = getJson('pending')
+    sleep(1)
     obj_Orderbook = getJson('orderbook')
+    sleep(1)
     obj_Orderbook_1 = getJson('orderbook_1')
+    sleep(1)
 
     # obj_Balanceからとれる情報取得
     free_XBT = obj_Balance['BTC']['free'] # free XBT

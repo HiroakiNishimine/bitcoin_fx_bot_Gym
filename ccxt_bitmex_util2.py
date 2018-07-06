@@ -1,3 +1,4 @@
+# coding=utf-8
 import ccxt, time, datetime
 
 Symbol = 'BTC/USD'
@@ -32,8 +33,6 @@ def bitmex():
 #   bitmex.urls['api'] = bitmex.urls['test'] #テスト用 本番口座の場合は不要
   
   return bitmex
-
-#order
 
 #API
 def getJson(label):

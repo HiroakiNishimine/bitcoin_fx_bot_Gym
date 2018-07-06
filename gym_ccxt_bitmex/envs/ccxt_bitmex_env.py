@@ -1,3 +1,4 @@
+# coding=utf-8
 import os, subprocess, time, signal
 import gym
 from gym import error, spaces
@@ -23,11 +24,11 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
     def __init__(self):
 
         self.action_space = spaces.Discrete(3)
-        self.observation_space = spaces.Box(low=-float('inf'), high=float('inf'), shape=(36,))
+        self.observation_space = spaces.Box(low=-float('inf'), high=float('inf'), shape=(38,))
 
         self.status = None
         self.seed()
-    
+
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
@@ -36,11 +37,10 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
         global start_total_XBT
         global step
 
-        step = step + 1 
-
+        step = step + 1
         observation = get_State()
+        sleep(2)
         Bid_price, Ask_price = observation[5], observation[3]
-
         self._take_action(action, Bid_price, Ask_price)
         self.status = 1
         observation = get_State()
@@ -56,14 +56,14 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
     def _take_action(self, action, Bid_price, Ask_price):
         if action == 0:
             print("action == buy")
-            order_Buy(symbol='BTC/USD', type='limit', side='buy', amount=3.0, price= Bid_price)
+            order_Buy(symbol='BTC/USD', type='limit', side='buy', amount=5.0, price= Bid_price)
 
         elif action == 1:
             print("action == stay")
 
         elif action == 2:
             print("action == sell")
-            order_Sell(symbol='BTC/USD', type='limit', side='sell', amount=3.0, price=Ask_price)
+            order_Sell(symbol='BTC/USD', type='limit', side='sell', amount=5.0, price=Ask_price)
 
 
     def _get_reward(self, observation, step):
@@ -71,16 +71,16 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
         # free XBTがstart時点より増えると報酬、減ると罰
         reward = (observation[2] - start_total_XBT)* 1000000 # observation[2] : total XBT
         print("{0}step, free XBT : {1}, reward : {2}".format(step, observation[2], reward))
-        
+
         date = datetime.datetime.now()
         with open('ccxt_bitmex_log_2018_07_06.csv','a',newline='') as f:
             writer = csv.writer(f)
             writer.writerow(['time', date, 'free XBT', observation[0], 'reward',reward])
- 
-        return reward 
+
+        return reward
 
     def reset(self):
-        # self.state = self.np_random.uniform(low=-0.05, high=0.05, size=(36,))
+        # self.state = self.np_random.uniform(low=-0.05, high=0.05, size=(38,))
         global start_total_XBT
         self.state = get_State()
         start_total_XBT = self.state[0]

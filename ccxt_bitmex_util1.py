@@ -21,18 +21,16 @@ import datetime
 #注文のキャンセル
 # cancel = bitmex().cancel_order('orderID')
 
-def order_Buy(symbol='BTC/USD', type='limit', side='buy', amount=1.0, price=10000):
+def order_Buy(symbol='BTC/USD', type='limit', side='buy', amount=5.0, price=10000):
     order_info = NewOrder(symbol, type, side, amount, price)
     print("order info 【buy】: {}".format(order_info))
 
-def order_Sell(symbol='BTC/USD', type='limit', side='sell', amount=1.0, price=10000):
+def order_Sell(symbol='BTC/USD', type='limit', side='sell', amount=5.0, price=10000):
     order_info = NewOrder(symbol, type, side, amount, price)
     print("order info 【sell】: {}".format(order_info))
 
-
-
 def get_State():
- 
+
     # #JSON取得
     obj_Ticker = getJson('ticker')
     obj_Markets = getJson('markets')
@@ -67,6 +65,10 @@ def get_State():
     percentage = obj_Ticker['percentage']
     average = obj_Ticker['average']
 
+    # ポジション情報の取得
+    BuyCount  = getPositions(obj_Position,'XBTUSD', "BUY")
+    SellCount = getPositions(obj_Position,'XBTUSD', "SELL")
+
 
     # obj_Orderbookからとれる情報
     # Ask # Bid
@@ -78,8 +80,8 @@ def get_State():
     asks2d = np.array(obj_Orderbook['asks'])
     f = asks2d[:, 1:]
     f = np.reshape(f, (-1,))
-    Orderbook_asks_mean = np.sum(np.prod(asks2d, axis=1)) / np.sum(f) 
-    # 板情報のaskの分散  
+    Orderbook_asks_mean = np.sum(np.prod(asks2d, axis=1)) / np.sum(f)
+    # 板情報のaskの分散
     n = np.sum(f)
     m = asks2d[:,0]
     m = np.reshape(m, (-1,))
@@ -92,8 +94,8 @@ def get_State():
     bids2d = np.array(obj_Orderbook['bids'])
     f = bids2d[:, 1:]
     f = np.reshape(f, (-1,))
-    Orderbook_bids_mean = np.sum(np.prod(bids2d, axis=1)) / np.sum(f) 
-    # 板情報のaskの分散  
+    Orderbook_bids_mean = np.sum(np.prod(bids2d, axis=1)) / np.sum(f)
+    # 板情報のaskの分散
     n = np.sum(f)
     m = bids2d[:,0]
     m = np.reshape(m, (-1,))
@@ -102,63 +104,62 @@ def get_State():
     # 板情報のaskの標準偏差
     Orderbook_bids_std = np.sqrt(Orderbook_bids_variance)
 
-    return (free_XBT, used_XBT, total_XBT ,Ask_price, Ask_amount, Bid_price, Bid_amount ,date.year, date.month, date.day, date.hour, date.minute, date.second, date.microsecond, date.weekday(), open, high, low, close, trades, volume, vwap, lastSize, turnover, homeNotional, timestamp, last, change, percentage, average, Orderbook_asks_mean, Orderbook_asks_variance, Orderbook_asks_std, Orderbook_bids_mean, Orderbook_bids_variance, Orderbook_bids_std)
+    return (free_XBT, used_XBT, total_XBT, Ask_price, Ask_amount, Bid_price, Bid_amount, date.year, date.month, date.day, date.hour, date.minute, date.second, date.microsecond, date.weekday(), open, high, low, close, trades, volume, vwap, lastSize, turnover, homeNotional, timestamp, last, change, percentage, average, Orderbook_asks_mean, Orderbook_asks_variance, Orderbook_asks_std, Orderbook_bids_mean, Orderbook_bids_variance, Orderbook_bids_std, BuyCount, SellCount)
 
-   
+
 #    #Buy Order
 #    if(tickCounts == 3):
-        
+
 #        if(BuyCount==0 and SellCount==0 and PendingCount==0):
-           
+
 #            orderPrice = Bid
-           
+
 #            #Buy Execution
 #            res = NewOrder(Symbol,'limit','buy', Lot, orderPrice)
 
 #            print(TimeCurrent(), " IN => Order Request: Buy Order")
 #            time.sleep(15)
-           
+
 #            result = OrderResponse(res) #発注結果の取得
-               
+
 #            if(result == True):
 #                print(TimeCurrent(), " IN / BUY: True") #発注成功
 
 #            else:
 #                print(TimeCurrent(), " IN / BUY: Flse") #発注失敗
-               
-           
+
+
 #    #Sell Order
 #    if(tickCounts == 10):
-        
+
 #        if(BuyCount==0 and SellCount==0 and PendingCount==0):
-            
+
 #            orderPrice = Ask
-           
+
 #            #Sell Execution
 #            res = NewOrder(Symbol,'limit','sell', Lot, orderPrice)
-           
+
 #            print(TimeCurrent(), " IN => Order Request: Buy Order")
 #            time.sleep(15)
-           
+
 #            result = OrderResponse(res) #発注結果の取得
-               
+
 #            if(result == True):
 #                print(TimeCurrent(), " IN / SELL: True") #発注成功
 
 #            else:
 #                print(TimeCurrent(), " IN / SELL: Flse") #発注失敗
-   
-   
+
+
 #    #Cancel Order
 #    if(tickCounts == 8 or tickCounts == 15):
-       
+
 #        if(PendingCount > 0):
 #            CancelPendingOrders(obj_Pending, symbol)
-   
-        
+
+
 if __name__ == '__main__':
-   
+
     obs = get_State()
 
     print(obs)
-

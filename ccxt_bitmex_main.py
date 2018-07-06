@@ -1,9 +1,11 @@
+# coding=utf-8
 import gym_ccxt_bitmex
 import numpy as np
 import gym
 
 from keras.models import Sequential
-from keras.layers import Dense, Activation, Flatten
+from keras.layers import Dense, Activation, Flatten, BatchNormalization
+from keras.layers.advanced_activations import LeakyReLU
 from keras.optimizers import Adam
 
 from rl.agents.dqn import DQNAgent
@@ -21,14 +23,18 @@ nb_actions = env.action_space.n
 # Next, we build a very simple model.
 model = Sequential()
 model.add(Flatten(input_shape=(1,) + env.observation_space.shape))
-model.add(Dense(36))
-model.add(Activation('relu'))
-model.add(Dense(18))
-model.add(Activation('relu'))
+model.add(Dense(38))
+model.add(LeakyReLU(alpha=0.3))
+model.add(BatchNormalization(momentum=0.8))
+model.add(Dense(24))
+model.add(LeakyReLU(alpha=0.3))
+model.add(BatchNormalization(momentum=0.8))
 model.add(Dense(10))
-model.add(Activation('relu'))
+model.add(LeakyReLU(alpha=0.3))
+model.add(BatchNormalization(momentum=0.8)) 
 model.add(Dense(nb_actions))
 model.add(Activation('linear'))
+
 print(model.summary())
 
 # Finally, we configure and compile our agent. You can use every built-in Keras optimizer and

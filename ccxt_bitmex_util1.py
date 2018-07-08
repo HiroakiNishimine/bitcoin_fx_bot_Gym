@@ -29,37 +29,45 @@ step = 0
 def cancel_Orders():
     # getJsonErrorフラグの初期化
     flg_getJsonError = 0
-    obj_Pending, flg_getJsonError = getJson('pending', flg_getJsonError)
+    obj_Pending, flg_getJsonError = getJson(
+        'pending', flg_getJsonError)
     sleep(1)
     if flg_getJsonError == 0:
         CancelPendingOrders(obj_Pending, Symbol='BTC/USD')
 
-def order_Buy(symbol='BTC/USD', type='limit', side='buy', amount=5.0, price=10000):
+def order_Buy(symbol='BTC/USD', type='limit', side='buy', amount=6.0, price=10000):
     order_info = NewOrder(symbol, type, side, amount, price)
     print("order info 【buy】: {}".format(order_info))
 
-def order_Sell(symbol='BTC/USD', type='limit', side='sell', amount=5.0, price=10000):
+def order_Sell(symbol='BTC/USD', type='limit', side='sell', amount=6.0, price=10000):
     order_info = NewOrder(symbol, type, side, amount, price)
     print("order info 【sell】: {}".format(order_info))
 
 def get_State():
     global start_total_XBT
+    timestamp = 0
 
     # getJsonErrorフラグの初期化
     flg_getJsonError = 0
 
     # #JSON取得
-    obj_Ticker, flg_getJsonError = getJson('ticker', flg_getJsonError)
+    obj_Ticker, flg_getJsonError = getJson(
+        'ticker', flg_getJsonError)
     sleep(1)
-    obj_Markets, flg_getJsonError = getJson('markets', flg_getJsonError)
+    obj_Markets, flg_getJsonError = getJson(
+        'markets', flg_getJsonError)
     sleep(1)
-    obj_Balance, flg_getJsonError = getJson('balance', flg_getJsonError)
+    obj_Balance, flg_getJsonError = getJson(
+        'balance', flg_getJsonError)
     sleep(1)
-    obj_Position, flg_getJsonError = getJson('position', flg_getJsonError)
+    obj_Position, flg_getJsonError = getJson(
+        'position', flg_getJsonError)
     sleep(1)
-    obj_Pending, flg_getJsonError = getJson('pending', flg_getJsonError)
+    obj_Pending, flg_getJsonError = getJson(
+        'pending', flg_getJsonError)
     sleep(1)
-    obj_Orderbook, flg_getJsonError = getJson('orderbook', flg_getJsonError)
+    obj_Orderbook, flg_getJsonError = getJson(
+        'orderbook', flg_getJsonError)
     sleep(1)
 
     # ポジション情報の取得
@@ -69,6 +77,7 @@ def get_State():
     sleep(1)
 
     if flg_getJsonError == 0:
+
         # obj_Balanceからとれる情報取得
         free_XBT = obj_Balance['BTC']['free'] # free XBT
         used_XBT = obj_Balance['BTC']['used'] # used XBT
@@ -204,7 +213,7 @@ def get_State():
 
 if __name__ == '__main__':
 
-    obs = get_State()
+    # obs = get_State()
     cancel_Orders()
 
     print(obs)

@@ -54,30 +54,30 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
     def _take_action(self, action, Bid_price, Ask_price):
         if action == 0:
             print("action == buy")
-            order_Buy(symbol='BTC/USD', type='limit', side='buy', amount=5.0, price= Bid_price)
+            order_Buy(symbol='BTC/USD', type='limit', side='buy', amount=10.0, price= Bid_price)
 
         elif action == 1:
             print("action == stay")
 
         elif action == 2:
             print("action == sell")
-            order_Sell(symbol='BTC/USD', type='limit', side='sell', amount=5.0, price=Ask_price)
+            order_Sell(symbol='BTC/USD', type='limit', side='sell', amount=10.0, price=Ask_price)
         
         elif action == 3:
             print("action == buy +")
-            order_Buy(symbol='BTC/USD', type='limit', side='buy', amount=5.0, price=Bid_price+0.5)
+            order_Buy(symbol='BTC/USD', type='limit', side='buy', amount=10.0, price=Bid_price+0.5)
         
         elif action == 4:
             print("action == buy -")
-            order_Buy(symbol='BTC/USD', type='limit', side='buy', amount=5.0, price=Bid_price-0.5)
+            order_Buy(symbol='BTC/USD', type='limit', side='buy', amount=10.0, price=Bid_price-0.5)
 
         elif action == 5:
             print("action == sell +")
-            order_Buy(symbol='BTC/USD', type='limit', side='sell', amount=5.0, price=Ask_price+0.5)
+            order_Sell(symbol='BTC/USD', type='limit', side='sell', amount=10.0, price=Ask_price+0.5)
 
         elif action == 6:
             print("action == sell -")
-            order_Buy(symbol='BTC/USD', type='limit', side='sell', amount=5.0, price=Ask_price-0.5)
+            order_Sell(symbol='BTC/USD', type='limit', side='sell', amount=10.0, price=Ask_price-0.5)
         
         elif action == 7:
             print("action == cancel orders")
@@ -90,7 +90,7 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
         print("{0}step, free XBT : {1}, reward : {2}".format(step, observation[2], reward))
 
         date = datetime.datetime.now()
-        with open('ccxt_bitmex_log_2018_07_06.csv','a',newline='') as f:
+        with open('ccxt_bitmex_log_2018_07_08.csv','a',newline='') as f:
             writer = csv.writer(f)
             writer.writerow(['time', date, 'free XBT', observation[0], 'reward',reward])
 

@@ -12,6 +12,10 @@ from rl.agents.dqn import DQNAgent
 from rl.policy import BoltzmannQPolicy
 from rl.memory import SequentialMemory
 
+# global variables
+start_total_XBT = 0.0
+step = 0
+
 ENV_NAME = 'ccxt_bitmex-v0'
 
 # Get the environment and extract the number of actions.

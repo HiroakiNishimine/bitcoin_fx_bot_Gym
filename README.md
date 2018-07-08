@@ -16,3 +16,6 @@ pip install simplejson
 
 python ccxt_bitmex_main.py
 ```
+
+# Caution
+* ccxt_bitmex_util2.pyに書いてあるapi key ,などは西峯のキーなので変えて使ってください。 

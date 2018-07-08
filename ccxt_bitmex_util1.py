@@ -7,6 +7,10 @@ import numpy as np
 import datetime
 from time import sleep
 
+# global variables
+start_total_XBT = 0.0
+step = 0
+
 #Tickerの取得
 #ticker = bitmex().fetch_ticker('BTC/USD')
 
@@ -22,6 +26,14 @@ from time import sleep
 #注文のキャンセル
 # cancel = bitmex().cancel_order('orderID')
 
+def cancel_Orders():
+    # getJsonErrorフラグの初期化
+    flg_getJsonError = 0
+    obj_Pending, flg_getJsonError = getJson('pending', flg_getJsonError)
+    sleep(1)
+    if flg_getJsonError == 0:
+        CancelPendingOrders(obj_Pending, Symbol='BTC/USD')
+
 def order_Buy(symbol='BTC/USD', type='limit', side='buy', amount=5.0, price=10000):
     order_info = NewOrder(symbol, type, side, amount, price)
     print("order info 【buy】: {}".format(order_info))
@@ -31,6 +43,7 @@ def order_Sell(symbol='BTC/USD', type='limit', side='sell', amount=5.0, price=10
     print("order info 【sell】: {}".format(order_info))
 
 def get_State():
+    global start_total_XBT
 
     # getJsonErrorフラグの初期化
     flg_getJsonError = 0
@@ -113,6 +126,19 @@ def get_State():
         Orderbook_bids_variance = ( sum(m2*f) / n ) - np.square(Orderbook_bids_mean)
         # 板情報のaskの標準偏差
         Orderbook_bids_std = np.sqrt(Orderbook_bids_variance)
+    
+    else:
+        free_XBT = 0
+        used_XBT = 0
+        total_XBT = start_total_XBT
+        Ask_price = 0
+        Ask_amount = 0
+        Bid_price = 0
+        Bid_amount = 0
+        open, high, low, close, trades, volume, vwap, lastSize = 0, 0, 0, 0, 0, 0, 0, 0
+        turnover, homeNotional, timestamp, last, change, percentage, average = 0, 0, 0, 0, 0, 0, 0
+        Orderbook_asks_mean, Orderbook_asks_variance, Orderbook_asks_std, Orderbook_bids_mean, Orderbook_bids_variance, Orderbook_bids_std = 0, 0, 0, 0, 0, 0
+        BuyCount, SellCount = 0, 0
 
     # time情報
     date = datetime.datetime.now()
@@ -179,5 +205,6 @@ def get_State():
 if __name__ == '__main__':
 
     obs = get_State()
+    cancel_Orders()
 
     print(obs)

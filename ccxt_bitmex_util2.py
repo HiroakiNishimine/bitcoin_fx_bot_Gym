@@ -51,7 +51,7 @@ def getJson(label, flg_getJsonError):
            return bitmex().private_get_position(), flg_getJsonError
 
        elif label == "pending":
-           return bitmex().fetch_open_orders(), flg_getJsonError
+           return bitmex().fetch_open_orders(Symbol), flg_getJsonError
        
        elif label == "orderbook":
            return bitmex().fetch_order_book(Symbol, limit=10000), flg_getJsonError
@@ -323,3 +323,12 @@ def OrderResponse(Response):
 def TimeCurrent():
    now = datetime.datetime.now()
    return now
+
+
+if __name__ == '__main__':
+    date = datetime.datetime.now()
+    openOrder = bitmex().fetch_orders(
+        symbol='BTC/USD', since='2014/01/02 03:04:05', limit=500)
+    closeOrder = bitmex().fetch_closed_orders(
+        symbol='BTC/USD', since=None, limit=500)
+    print(openOrder)

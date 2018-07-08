@@ -6,7 +6,7 @@ from gym import utils
 from gym.utils import seeding
 import numpy as np
 import math
-from ccxt_bitmex_util1 import get_State, order_Buy, order_Sell
+from ccxt_bitmex_util1 import get_State, order_Buy, order_Sell, cancel_Orders
 import datetime
 
 import logging
@@ -22,7 +22,7 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
 
     def __init__(self):
 
-        self.action_space = spaces.Discrete(7)
+        self.action_space = spaces.Discrete(8)
         self.observation_space = spaces.Box(low=-float('inf'), high=float('inf'), shape=(39,))
 
         self.status = None
@@ -78,7 +78,10 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
         elif action == 6:
             print("action == sell -")
             order_Buy(symbol='BTC/USD', type='limit', side='sell', amount=5.0, price=Ask_price-0.5)
-
+        
+        elif action == 7:
+            print("action == cancel orders")
+            cancel_Orders()
 
     def _get_reward(self, observation, step):
         global start_total_XBT

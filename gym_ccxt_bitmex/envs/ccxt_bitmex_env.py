@@ -61,23 +61,23 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
 
         elif action == 2:
             print("action == sell")
-            order_Sell(symbol='BTC/USD', type='limit', side='sell', amount=10.0, price=Ask_price)
+            order_Sell(symbol='BTC/USD', type='limit', side='sell', amount=20.0, price=Ask_price)
         
         elif action == 3:
             print("action == buy +")
-            order_Buy(symbol='BTC/USD', type='limit', side='buy', amount=10.0, price=Bid_price+0.5)
+            order_Buy(symbol='BTC/USD', type='limit', side='buy', amount=20.0, price=Bid_price+0.5)
         
         elif action == 4:
             print("action == buy -")
-            order_Buy(symbol='BTC/USD', type='limit', side='buy', amount=10.0, price=Bid_price-0.5)
+            order_Buy(symbol='BTC/USD', type='limit', side='buy', amount=20.0, price=Bid_price-0.5)
 
         elif action == 5:
             print("action == sell +")
-            order_Sell(symbol='BTC/USD', type='limit', side='sell', amount=10.0, price=Ask_price+0.5)
+            order_Sell(symbol='BTC/USD', type='limit', side='sell', amount=20.0, price=Ask_price+0.5)
 
         elif action == 6:
             print("action == sell -")
-            order_Sell(symbol='BTC/USD', type='limit', side='sell', amount=10.0, price=Ask_price-0.5)
+            order_Sell(symbol='BTC/USD', type='limit', side='sell', amount=20.0, price=Ask_price-0.5)
         
         elif action == 7:
             print("action == cancel orders")

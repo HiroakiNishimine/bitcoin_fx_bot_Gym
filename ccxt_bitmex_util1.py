@@ -150,12 +150,13 @@ def get_State():
         turnover, homeNotional, timestamp, last, change, percentage, average = 0, 0, 0, 0, 0, 0, 0
         Orderbook_asks_mean, Orderbook_asks_variance, Orderbook_asks_std, Orderbook_bids_mean, Orderbook_bids_variance, Orderbook_bids_std = 0, 0, 0, 0, 0, 0
         BuyCount, SellCount = 0, 0
+        PendingCount, BUY_LotAmount, SELL_LotAmount = 0, 0, 0
 
     # time情報
     date = datetime.datetime.now()
 
     state = (free_XBT, used_XBT, total_XBT, Ask_price, Ask_amount, Bid_price, Bid_amount, date.year, date.month, date.day, date.hour, date.minute, date.second, date.microsecond, date.weekday(), open, high, low, close, trades, volume, vwap, lastSize,
-     turnover, homeNotional, timestamp, last, change, percentage, average, Orderbook_asks_mean, Orderbook_asks_variance, Orderbook_asks_std, Orderbook_bids_mean, Orderbook_bids_variance, Orderbook_bids_std, BuyCount, SellCount, flg_getJsonError)
+             turnover, homeNotional, timestamp, last, change, percentage, average, Orderbook_asks_mean, Orderbook_asks_variance, Orderbook_asks_std, Orderbook_bids_mean, Orderbook_bids_variance, Orderbook_bids_std, BuyCount, SellCount, PendingCount, BUY_LotAmount, SELL_LotAmount,flg_getJsonError, 0,0,0,0,0,0)
     
     print("state : {}".format(state))
 

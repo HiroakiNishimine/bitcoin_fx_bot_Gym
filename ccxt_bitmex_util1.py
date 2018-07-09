@@ -70,13 +70,15 @@ def get_State():
         'orderbook', flg_getJsonError)
     sleep(1)
 
-    # ポジション情報の取得
-    BuyCount  = getPositions(obj_Position,'XBTUSD', "BUY")
-    sleep(1)
-    SellCount = getPositions(obj_Position,'XBTUSD', "SELL")
-    sleep(1)
-
     if flg_getJsonError == 0:
+        # ポジション情報の取得
+        # BuyCount = getPositions(obj_Position, 'XBTUSD', "BUY")
+        # sleep(1)
+        # SellCount = getPositions(obj_Position, 'XBTUSD', "SELL")
+        # sleep(1)
+        #ポジション情報取得
+        BuyCount, SellCount, PositionCount, PendingCount, BUY_LotAmount, SELL_LotAmount = AccountPositions(
+            obj_Position, obj_Pending)
 
         # obj_Balanceからとれる情報取得
         free_XBT = obj_Balance['BTC']['free'] # free XBT
@@ -213,7 +215,7 @@ def get_State():
 
 if __name__ == '__main__':
 
-    # obs = get_State()
-    cancel_Orders()
+    obs = get_State()
+    # cancel_Orders()
 
     print(obs)

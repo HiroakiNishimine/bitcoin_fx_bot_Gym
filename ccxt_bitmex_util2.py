@@ -221,7 +221,7 @@ def getPendingOrdersCount(json_obj, Symbol):
 #ポジション情報
 def AccountPositions(obj_Posi, obj_Pending):
    
-   global BuyCount, SellCount, PositionCount, PendingCount, BUY_LotAmount, SELL_LotAmount
+#    global BuyCount, SellCount, PositionCount, PendingCount, BUY_LotAmount, SELL_LotAmount
 
    BuyCount = getPositions(obj_Posi, symbol, "BUY")
    SellCount = getPositions(obj_Posi, symbol, "SELL")
@@ -230,6 +230,7 @@ def AccountPositions(obj_Posi, obj_Pending):
    SELL_LotAmount = getPositionQuantity(obj_Posi, symbol, "SELL")
    
    PositionCount = BuyCount + SellCount
+   return BuyCount, SellCount, PositionCount, PendingCount, BUY_LotAmount, SELL_LotAmount
 
 #口座情報取得
 def AccountInfo(obj_balance, bid):

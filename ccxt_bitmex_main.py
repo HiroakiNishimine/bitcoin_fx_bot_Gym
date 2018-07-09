@@ -27,13 +27,13 @@ nb_actions = env.action_space.n
 # Next, we build a very simple model.
 model = Sequential()
 model.add(Flatten(input_shape=(1,) + env.observation_space.shape))
-model.add(Dense(39))
+model.add(Dense(42))
 model.add(LeakyReLU(alpha=0.3))
 model.add(BatchNormalization(momentum=0.8))
-model.add(Dense(27))
+model.add(Dense(31))
 model.add(LeakyReLU(alpha=0.3))
 model.add(BatchNormalization(momentum=0.8))
-model.add(Dense(14))
+model.add(Dense(16))
 model.add(LeakyReLU(alpha=0.3))
 model.add(BatchNormalization(momentum=0.8)) 
 model.add(Dense(nb_actions))
@@ -54,7 +54,7 @@ dqn.compile(Adam(lr=1e-3), metrics=['mae'])
 # Okay, now it's time to learn something! We visualize the training here for show, but this
 # slows down training quite a lot. You can always safely abort the training prematurely using
 # Ctrl + C.
-dqn.fit(env, nb_steps=500, visualize=False, verbose=2)
+dqn.fit(env, nb_steps=600, visualize=False, verbose=2)
 
 # After training is done, we save the final weights.
 dqn.save_weights('dqn_{}_weights.h5f'.format(ENV_NAME), overwrite=True)

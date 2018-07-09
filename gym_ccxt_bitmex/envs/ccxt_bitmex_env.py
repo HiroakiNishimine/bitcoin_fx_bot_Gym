@@ -54,7 +54,7 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
     def _take_action(self, action, Bid_price, Ask_price):
         if action == 0:
             print("action == buy")
-            order_Buy(symbol='BTC/USD', type='limit', side='buy', amount=10.0, price= Bid_price)
+            order_Buy(symbol='BTC/USD', type='limit', side='buy', amount=20.0, price= Bid_price)
 
         elif action == 1:
             print("action == stay")
@@ -87,12 +87,12 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
         global start_total_XBT
         # free XBTがstart時点より増えると報酬、減ると罰
         reward = (observation[2] - start_total_XBT)* 1000000 # observation[2] : total XBT
-        print("{0}step, free XBT : {1}, reward : {2}".format(step, observation[2], reward))
+        print("{0}step, total XBT : {1}, reward : {2}".format(step, observation[2], reward))
 
         date = datetime.datetime.now()
-        with open('ccxt_bitmex_log_2018_07_08.csv','a',newline='') as f:
+        with open('ccxt_bitmex_log_2018_07_09.csv','a',newline='') as f:
             writer = csv.writer(f)
-            writer.writerow(['time', date, 'free XBT', observation[0], 'reward',reward])
+            writer.writerow(['time', date, 'total XBT', observation[2], 'reward',reward])
 
         return reward
 
@@ -100,7 +100,7 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
         # self.state = self.np_random.uniform(low=-0.05, high=0.05, size=(39,))
         global start_total_XBT
         self.state = get_State()
-        start_total_XBT = self.state[0]
+        start_total_XBT = self.state[2]
         print("start_total_XBT : {}".format(start_total_XBT))
 
         with open('ccxt_bitmex_log_2018_07_07.csv','a',newline='') as f:

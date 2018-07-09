@@ -39,6 +39,8 @@ model.add(BatchNormalization(momentum=0.8))
 model.add(Dense(nb_actions))
 model.add(Activation('linear'))
 
+model.load_weights('dqn_ccxt_bitmex-v0_weights.h5f')
+
 print(model.summary())
 
 # Finally, we configure and compile our agent. You can use every built-in Keras optimizer and
@@ -56,6 +58,8 @@ dqn.fit(env, nb_steps=500, visualize=False, verbose=2)
 
 # After training is done, we save the final weights.
 dqn.save_weights('dqn_{}_weights.h5f'.format(ENV_NAME), overwrite=True)
+
+dqn.fit(env, nb_steps=3000, visualize=False, verbose=2)
 
 # Finally, evaluate our algorithm for 5 episodes.
 dqn.test(env, nb_episodes=5, visualize=True)

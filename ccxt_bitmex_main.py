@@ -39,7 +39,7 @@ model.add(BatchNormalization(momentum=0.8))
 model.add(Dense(nb_actions))
 model.add(Activation('linear'))
 
-model.load_weights('dqn_ccxt_bitmex-v0_weights.h5f')
+# model.load_weights('dqn_ccxt_bitmex-v0_weights.h5f')
 
 print(model.summary())
 

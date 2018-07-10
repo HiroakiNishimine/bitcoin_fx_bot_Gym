@@ -2,6 +2,7 @@
 import gym_ccxt_bitmex
 import numpy as np
 import gym
+import datetime
 
 from keras.models import Sequential
 from keras.layers import Dense, Activation, Flatten, BatchNormalization
@@ -54,10 +55,12 @@ dqn.compile(Adam(lr=1e-3), metrics=['mae'])
 # Okay, now it's time to learn something! We visualize the training here for show, but this
 # slows down training quite a lot. You can always safely abort the training prematurely using
 # Ctrl + C.
-dqn.fit(env, nb_steps=600, visualize=False, verbose=2)
+dqn.fit(env, nb_steps=1000, visualize=False, verbose=2) # 1step:36sec, 1000step:10hours
 
 # After training is done, we save the final weights.
-dqn.save_weights('dqn_{}_weights.h5f'.format(ENV_NAME), overwrite=True)
+date = datetime.datetime.now()
+dqn.save_weights('dqn_{0}_weights_{1}_{2}_{3}.h5f'.format(
+    ENV_NAME, date.year, date.month, date.day), overwrite=True)
 
 dqn.fit(env, nb_steps=3000, visualize=False, verbose=2)
 

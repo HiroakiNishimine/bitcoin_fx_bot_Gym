@@ -40,7 +40,7 @@ model.add(BatchNormalization(momentum=0.8))
 model.add(Dense(nb_actions))
 model.add(Activation('linear'))
 
-# model.load_weights('dqn_ccxt_bitmex-v0_weights.h5f')
+model.load_weights('dqn_ccxt_bitmex-v0_weights_2018_7_11.h5f')
 
 print(model.summary())
 
@@ -55,14 +55,14 @@ dqn.compile(Adam(lr=1e-3), metrics=['mae'])
 # Okay, now it's time to learn something! We visualize the training here for show, but this
 # slows down training quite a lot. You can always safely abort the training prematurely using
 # Ctrl + C.
-dqn.fit(env, nb_steps=1000, visualize=False, verbose=2) # 1step:36sec, 1000step:10hours
+dqn.fit(env, nb_steps=1300, visualize=False, verbose=2) # 1step:36sec, 1000step:10hours
 
 # After training is done, we save the final weights.
 date = datetime.datetime.now()
-dqn.save_weights('dqn_{0}_weights_{1}_{2}_{3}.h5f'.format(
-    ENV_NAME, date.year, date.month, date.day), overwrite=True)
+dqn.save_weights('dqn_{0}_weights_{1}_{2}_{3}_{4}.h5f'.format(
+    ENV_NAME, date.year, date.month, date.day, date.hour), overwrite=True)
 
 dqn.fit(env, nb_steps=3000, visualize=False, verbose=2)
 
 # Finally, evaluate our algorithm for 5 episodes.
-dqn.test(env, nb_episodes=5, visualize=True)
+# dqn.test(env, nb_episodes=5, visualize=True)

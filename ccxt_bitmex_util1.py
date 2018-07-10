@@ -11,21 +11,6 @@ from time import sleep
 start_total_XBT = 0.0
 step = 0
 
-#Tickerの取得
-#ticker = bitmex().fetch_ticker('BTC/USD')
-
-#口座情報の取得
-#balance = bitmex().fetch_balance()
-
-#ポジションの取得
-# position = bitmex().private_get_position()
-
-#注文の取得
-#open_orders = bitmex().fetch_open_orders()
-
-#注文のキャンセル
-# cancel = bitmex().cancel_order('orderID')
-
 def cancel_Orders():
     # getJsonErrorフラグの初期化
     flg_getJsonError = 0
@@ -71,11 +56,7 @@ def get_State():
     sleep(1)
 
     if flg_getJsonError == 0:
-        # ポジション情報の取得
-        # BuyCount = getPositions(obj_Position, 'XBTUSD', "BUY")
-        # sleep(1)
-        # SellCount = getPositions(obj_Position, 'XBTUSD', "SELL")
-        # sleep(1)
+
         #ポジション情報取得
         BuyCount, SellCount, PositionCount, PendingCount, BUY_LotAmount, SELL_LotAmount = AccountPositions(
             obj_Position, obj_Pending)
@@ -102,41 +83,8 @@ def get_State():
         percentage = obj_Ticker['percentage']
         average = obj_Ticker['average']
 
-        # obj_Orderbookからとれる情報
-        # Ask # Bid
-        Ask_price = obj_Orderbook['asks'][0][0]
-        Ask_amount = obj_Orderbook['asks'][0][1]
-        Bid_price = obj_Orderbook['bids'][0][0]
-        Bid_amount = obj_Orderbook['bids'][0][1]
-
-        # http://www.geisya.or.jp/~mwm48961/electro/histogram2.htm
-        # 板情報のaskの平均
-        asks2d = np.array(obj_Orderbook['asks'])
-        f = asks2d[:, 1:]
-        f = np.reshape(f, (-1,))
-        Orderbook_asks_mean = np.sum(np.prod(asks2d, axis=1)) / np.sum(f)
-        # 板情報のaskの分散
-        n = np.sum(f)
-        m = asks2d[:,0]
-        m = np.reshape(m, (-1,))
-        m2 = np.square(m)
-        Orderbook_asks_variance = ( sum(m2*f) / n ) - np.square(Orderbook_asks_mean)
-        # 板情報のaskの標準偏差
-        Orderbook_asks_std = np.sqrt(Orderbook_asks_variance)
-
-        # 板情報のbidsの平均
-        bids2d = np.array(obj_Orderbook['bids'])
-        f = bids2d[:, 1:]
-        f = np.reshape(f, (-1,))
-        Orderbook_bids_mean = np.sum(np.prod(bids2d, axis=1)) / np.sum(f)
-        # 板情報のaskの分散
-        n = np.sum(f)
-        m = bids2d[:,0]
-        m = np.reshape(m, (-1,))
-        m2 = np.square(m)
-        Orderbook_bids_variance = ( sum(m2*f) / n ) - np.square(Orderbook_bids_mean)
-        # 板情報のaskの標準偏差
-        Orderbook_bids_std = np.sqrt(Orderbook_bids_variance)
+        Ask_price, Ask_amount, Bid_price, Bid_amount, Orderbook_asks_mean, Orderbook_asks_variance, Orderbook_asks_std, Orderbook_bids_mean, Orderbook_bids_variance, Orderbook_bids_std = get_order_info(
+            obj_Orderbook)
     
     else:
         free_XBT = 0

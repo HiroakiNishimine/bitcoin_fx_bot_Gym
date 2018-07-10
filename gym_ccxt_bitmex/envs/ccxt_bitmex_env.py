@@ -88,10 +88,11 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
         global start_total_XBT
         # free XBTがstart時点より増えると報酬、減ると罰
         reward = (observation[2] - start_total_XBT)* 1000000 # observation[2] : total XBT
-        print("{0}step, total XBT : {1}, reward : {2}".format(step, observation[2], reward))
+        print("【{0}step, total XBT : {1}, reward : {2}, {3}XBT】".format(
+            step, observation[2], reward, (observation[2] - start_total_XBT)))
 
         date = datetime.datetime.now()
-        with open('ccxt_bitmex_log_2018_07_09.csv','a',newline='') as f:
+        with open('ccxt_bitmex_log_2018_07_10.csv','a',newline='') as f:
             writer = csv.writer(f)
             writer.writerow(['time', date, 'total XBT', observation[2], 'reward',reward])
 
@@ -104,7 +105,7 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
         start_total_XBT = self.state[2]
         print("start_total_XBT : {}".format(start_total_XBT))
 
-        with open('ccxt_bitmex_log_2018_07_07.csv','a',newline='') as f:
+        with open('ccxt_bitmex_log_2018_07_10.csv','a',newline='') as f:
             writer = csv.writer(f)
             writer.writerow(['start_total_XBT', start_total_XBT])
 

@@ -1,6 +1,7 @@
 # coding=utf-8
 import ccxt, time, datetime
 import ccxt
+import numpy as np
 
 Symbol = 'BTC/USD'
 symbol = 'XBTUSD'
@@ -59,7 +60,8 @@ def getJson(label, flg_getJsonError):
            return bitmex().fetch_open_orders(symbol=Symbol,  limit=500), flg_getJsonError
        
        elif label == "orderbook":
-           return bitmex().fetch_order_book(Symbol, limit=10000), flg_getJsonError
+        #    return bitmex().fetch_order_book(Symbol, limit=100), flg_getJsonError
+           return bitmex().fetch_order_book(Symbol), flg_getJsonError
 
        else:
            return None
@@ -324,6 +326,49 @@ def OrderResponse(Response):
        print(str(TimeCurrent()) + " Can not Get Order Response")
        return False
        
+
+def get_order_info(obj_Orderbook):
+    # obj_Orderbookからとれる情報
+    # Ask # Bid
+    Ask_price = obj_Orderbook['asks'][0][0]
+    Ask_amount = obj_Orderbook['asks'][0][1]
+    Bid_price = obj_Orderbook['bids'][0][0]
+    Bid_amount = obj_Orderbook['bids'][0][1]
+
+    # http://www.geisya.or.jp/~mwm48961/electro/histogram2.htm
+    # 板情報のaskの平均
+    asks2d = np.array(obj_Orderbook['asks'])
+    f = asks2d[:, 1:]
+    f = np.reshape(f, (-1,))
+    Orderbook_asks_mean = np.sum(np.prod(asks2d, axis=1)) / np.sum(f)
+    # 板情報のaskの分散
+    n = np.sum(f)
+    m = asks2d[:, 0]
+    m = np.reshape(m, (-1,))
+    m2 = np.square(m)
+    Orderbook_asks_variance = (sum(m2*f) / n) - \
+        np.square(Orderbook_asks_mean)
+    # 板情報のaskの標準偏差
+    Orderbook_asks_std = np.sqrt(Orderbook_asks_variance)
+
+    # 板情報のbidsの平均
+    bids2d = np.array(obj_Orderbook['bids'])
+    f = bids2d[:, 1:]
+    f = np.reshape(f, (-1,))
+    Orderbook_bids_mean = np.sum(np.prod(bids2d, axis=1)) / np.sum(f)
+    # 板情報のaskの分散
+    n = np.sum(f)
+    m = bids2d[:, 0]
+    m = np.reshape(m, (-1,))
+    m2 = np.square(m)
+    Orderbook_bids_variance = (sum(m2*f) / n) - \
+        np.square(Orderbook_bids_mean)
+    # 板情報のaskの標準偏差
+    Orderbook_bids_std = np.sqrt(Orderbook_bids_variance)
+
+    return Ask_price, Ask_amount, Bid_price, Bid_amount, Orderbook_asks_mean, Orderbook_asks_variance, Orderbook_asks_std, Orderbook_bids_mean, Orderbook_bids_variance, Orderbook_bids_std
+
+
 
 #NowTime
 def TimeCurrent():

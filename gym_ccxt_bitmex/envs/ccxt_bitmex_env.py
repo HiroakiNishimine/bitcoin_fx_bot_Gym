@@ -44,10 +44,11 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
         observation = get_State()
         reward = self._get_reward(observation, step)
 
-        if observation[0] <= (start_total_XBT / 1.4):
-            episode_over = True
-        else:
-            episode_over = False
+        # if observation[0] <= (start_total_XBT / 1.4):
+        #     episode_over = True
+        # else:
+        #     episode_over = False
+        episode_over = False
 
         return observation, reward, episode_over, {}
 

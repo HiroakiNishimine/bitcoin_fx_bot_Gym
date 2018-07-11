@@ -57,6 +57,12 @@ def get_State():
 
     if flg_getJsonError == 0:
 
+        # Markets情報
+        turnover24h = obj_Markets[43]['info']['turnover24h']
+        impactBidPrice = obj_Markets[43]['info']['impactBidPrice']
+        impactAskPrice = obj_Markets[43]['info']['impactAskPrice']
+        volume24h = obj_Markets[43]['info']['volume24h']
+
         #ポジション情報取得
         BuyCount, SellCount, PositionCount, PendingCount, BUY_LotAmount, SELL_LotAmount = AccountPositions(
             obj_Position, obj_Pending)
@@ -99,14 +105,16 @@ def get_State():
         Orderbook_asks_mean, Orderbook_asks_variance, Orderbook_asks_std, Orderbook_bids_mean, Orderbook_bids_variance, Orderbook_bids_std = 0, 0, 0, 0, 0, 0
         BuyCount, SellCount = 0, 0
         PendingCount, BUY_LotAmount, SELL_LotAmount = 0, 0, 0
+        turnover24h, impactBidPrice, impactAskPrice, volume24h = 0,0,0,0
 
     # time情報
     date = datetime.datetime.now()
 
     state = (free_XBT, used_XBT, total_XBT, Ask_price, Ask_amount, Bid_price, Bid_amount, date.year, date.month, date.day, date.hour, date.minute, date.second, date.microsecond, date.weekday(), open, high, low, close, trades, volume, vwap, lastSize,
-             turnover, homeNotional, timestamp, last, change, percentage, average, Orderbook_asks_mean, Orderbook_asks_variance, Orderbook_asks_std, Orderbook_bids_mean, Orderbook_bids_variance, Orderbook_bids_std, BuyCount, SellCount, PendingCount, BUY_LotAmount, SELL_LotAmount,flg_getJsonError, 0,0,0,0,0,0)
+             turnover, homeNotional, timestamp, last, change, percentage, average, Orderbook_asks_mean, Orderbook_asks_variance, Orderbook_asks_std, Orderbook_bids_mean, Orderbook_bids_variance, Orderbook_bids_std, BuyCount, SellCount, PendingCount, BUY_LotAmount, SELL_LotAmount, flg_getJsonError, turnover24h, impactBidPrice, impactAskPrice, volume24h, 0, 0)
     
-    print("state : {}".format(state))
+    print("state : free_XBT:{0}, used_XBT:{1}, total_XBT:{2}, Ask_price:{3}, Ask_amount:{4}, Bid_price:{5}, Bid_amount:{6}, date.year:{7}, date.month:{8}, date.day:{9}, date.hour:{10}, date.minute:{11}, date.second:{12}, date.microsecond:{13}, date.weekday():{14}, open:{15}, high:{16}, low:{17}, close:{18}, trades:{19}, volume:{20}, vwap:{21}, lastSize:{22}, turnover: {23}, homeNotional: {24}, timestamp: {25}, last: {26}, change: {27}, percentage: {28}, average: {29}, Orderbook_asks_mean: {30}, Orderbook_asks_variance: {31}, Orderbook_asks_std: {32}, Orderbook_bids_mean: {33}, Orderbook_bids_variance: {34}, Orderbook_bids_std: {35}, BuyCount: {36}, SellCount: {37}, PendingCount: {38}, BUY_LotAmount: {39}, SELL_LotAmount: {40}, flg_getJsonError: {41}, turnover24h: {42}, impactBidPrice: {43}, impactAskPrice: {44}, volume24h: {45}, NONE: {46}, NONE: {47}".format(
+        state[0], state[1], state[2], state[3], state[4], state[5], state[6], state[7], state[8], state[9], state[10], state[11], state[12], state[13], state[14], state[15], state[16], state[17], state[18], state[19], state[20], state[21], state[22], state[23], state[24], state[25], state[26], state[27], state[28], state[29], state[30], state[31], state[32], state[33], state[34], state[35], state[36], state[37], state[38], state[39], state[40], state[41], state[42], state[43], state[44], state[45], state[46], state[47]))
 
     return state
 

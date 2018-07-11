@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 # global variables
 start_total_XBT = 0.0
 step = 0
+prev_reward = 0.0
 
 class CcxtBitmexEnv(gym.Env, utils.EzPickle):
     metadata = {'render.modes': ['human']}
@@ -42,7 +43,8 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
         self._take_action(action, Bid_price, Ask_price)
         self.status = 1
         observation = get_State()
-        reward = self._get_reward(observation, step)
+        flg_getJsonError = observation[41]
+        reward = self._get_reward(observation, step, flg_getJsonError)
 
         # if observation[0] <= (start_total_XBT / 1.4):
         #     episode_over = True
@@ -84,8 +86,8 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
             print("action == cancel orders")
             cancel_Orders()
 
-    def _get_reward(self, observation, step):
-        global start_total_XBT
+    def _get_reward(self, observation, step, flg_getJsonError):
+        global start_total_XBT, prev_reward
         # free XBTがstart時点より増えると報酬、減ると罰
         reward = (observation[2] - start_total_XBT)* 1000000 # observation[2] : total XBT
         print("【{0}step, total XBT : {1}, reward : {2}, {3}XBT】".format(
@@ -95,6 +97,11 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
         with open('ccxt_bitmex_log_2018_07_12.csv','a',newline='') as f:
             writer = csv.writer(f)
             writer.writerow(['time', date, 'total XBT', observation[2], 'reward',reward])
+        
+        if flg_getJsonError >= 1:
+            reward = prev_reward
+        else:
+            prev_reward = reward
 
         return reward
 

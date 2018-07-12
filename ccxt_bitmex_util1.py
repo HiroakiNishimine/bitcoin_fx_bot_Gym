@@ -28,6 +28,33 @@ def order_Sell(symbol='BTC/USD', type='limit', side='sell', amount=6.0, price=10
     order_info = NewOrder(symbol, type, side, amount, price)
     print("order info 【sell】: {}".format(order_info))
 
+
+def get_State_forAction():
+    # getJsonErrorフラグの初期化
+    flg_getJsonError = 0
+
+    # JSON取得
+    obj_Orderbook, flg_getJsonError = getJson(
+        'orderbook', flg_getJsonError)
+    sleep(1)
+    obj_Position, flg_getJsonError = getJson(
+        'position', flg_getJsonError)
+    sleep(1)
+    obj_Pending, flg_getJsonError = getJson(
+        'pending', flg_getJsonError)
+    sleep(1)
+
+    if flg_getJsonError == 0:
+        Ask_price, Ask_amount, Bid_price, Bid_amount, Orderbook_asks_mean, Orderbook_asks_variance, Orderbook_asks_std, Orderbook_bids_mean, Orderbook_bids_variance, Orderbook_bids_std = get_order_info(
+            obj_Orderbook)
+        #ポジション情報取得
+        BuyCount, SellCount, PositionCount, PendingCount, BUY_LotAmount, SELL_LotAmount = AccountPositions(
+            obj_Position, obj_Pending)
+    else:
+        Bid_price, Ask_price, BuyCount, SellCount, BUY_LotAmount, SELL_LotAmount = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+
+    return Bid_price, Ask_price, BuyCount, SellCount, BUY_LotAmount, SELL_LotAmount, flg_getJsonError
+
 def get_State():
     global start_total_XBT
     timestamp = 0
@@ -35,7 +62,7 @@ def get_State():
     # getJsonErrorフラグの初期化
     flg_getJsonError = 0
 
-    # #JSON取得
+    # JSON取得
     obj_Ticker, flg_getJsonError = getJson(
         'ticker', flg_getJsonError)
     sleep(1)
@@ -54,6 +81,9 @@ def get_State():
     obj_Orderbook, flg_getJsonError = getJson(
         'orderbook', flg_getJsonError)
     sleep(1)
+    obj_5Orderbook, flg_getJsonError = getJson(
+        '5orderbook', flg_getJsonError)
+    sleep(1)
 
     if flg_getJsonError == 0:
 
@@ -63,12 +93,14 @@ def get_State():
         impactAskPrice = obj_Markets[43]['info']['impactAskPrice']
         volume24h = obj_Markets[43]['info']['volume24h']
 
-        #ポジション情報取得
+        #オーダー情報(ひとつだけ)取得
         BuyCount, SellCount, PositionCount, PendingCount, BUY_LotAmount, SELL_LotAmount = AccountPositions(
             obj_Position, obj_Pending)
         if PendingCount >= 1:
             PendingPrice = obj_Pending[0]['price']
-
+        else:
+            PendingPrice = 0.0
+    
         # obj_Balanceからとれる情報取得
         free_XBT = obj_Balance['BTC']['free'] # free XBT
         used_XBT = obj_Balance['BTC']['used'] # used XBT
@@ -93,6 +125,9 @@ def get_State():
 
         Ask_price, Ask_amount, Bid_price, Bid_amount, Orderbook_asks_mean, Orderbook_asks_variance, Orderbook_asks_std, Orderbook_bids_mean, Orderbook_bids_variance, Orderbook_bids_std = get_order_info(
             obj_Orderbook)
+
+        _, _, _, _, Orderbook5_asks_mean, Orderbook5_asks_variance, Orderbook5_asks_std, Orderbook5_bids_mean, Orderbook5_bids_variance, Orderbook5_bids_std = get_order_info(
+            obj_5Orderbook)
     
     else:
         free_XBT = 0
@@ -104,7 +139,9 @@ def get_State():
         Bid_amount = 0
         open, high, low, close, trades, volume, vwap, lastSize = 0, 0, 0, 0, 0, 0, 0, 0
         turnover, homeNotional, timestamp, last, change, percentage, average = 0, 0, 0, 0, 0, 0, 0
+
         Orderbook_asks_mean, Orderbook_asks_variance, Orderbook_asks_std, Orderbook_bids_mean, Orderbook_bids_variance, Orderbook_bids_std = 0, 0, 0, 0, 0, 0
+        Orderbook5_asks_mean, Orderbook5_asks_variance, Orderbook5_asks_std, Orderbook5_bids_mean, Orderbook5_bids_variance, Orderbook5_bids_std = 0, 0, 0, 0, 0, 0
         BuyCount, SellCount = 0, 0
         PendingCount, BUY_LotAmount, SELL_LotAmount = 0, 0, 0
         turnover24h, impactBidPrice, impactAskPrice, volume24h = 0,0,0,0
@@ -114,10 +151,10 @@ def get_State():
     date = datetime.datetime.now()
 
     state = (free_XBT, used_XBT, total_XBT, Ask_price, Ask_amount, Bid_price, Bid_amount, date.year, date.month, date.day, date.hour, date.minute, date.second, date.microsecond, date.weekday(), open, high, low, close, trades, volume, vwap, lastSize,
-             turnover, homeNotional, timestamp, last, change, percentage, average, Orderbook_asks_mean, Orderbook_asks_variance, Orderbook_asks_std, Orderbook_bids_mean, Orderbook_bids_variance, Orderbook_bids_std, BuyCount, SellCount, PendingCount, BUY_LotAmount, SELL_LotAmount, flg_getJsonError, turnover24h, impactBidPrice, impactAskPrice, volume24h, PendingPrice, 0)
+             turnover, homeNotional, timestamp, last, change, percentage, average, Orderbook_asks_mean, Orderbook_asks_variance, Orderbook_asks_std, Orderbook_bids_mean, Orderbook_bids_variance, Orderbook_bids_std, BuyCount, SellCount, PendingCount, BUY_LotAmount, SELL_LotAmount, flg_getJsonError, turnover24h, impactBidPrice, impactAskPrice, volume24h, PendingPrice, Orderbook5_asks_mean, Orderbook5_asks_variance, Orderbook5_asks_std, Orderbook5_bids_mean, Orderbook5_bids_variance, Orderbook5_bids_std, 0, 0, 0, 0, 0)
     
-    print("state : free_XBT:{0}, used_XBT:{1}, total_XBT:{2}, Ask_price:{3}, Ask_amount:{4}, Bid_price:{5}, Bid_amount:{6}, date.year:{7}, date.month:{8}, date.day:{9}, date.hour:{10}, date.minute:{11}, date.second:{12}, date.microsecond:{13}, date.weekday():{14}, open:{15}, high:{16}, low:{17}, close:{18}, trades:{19}, volume:{20}, vwap:{21}, lastSize:{22}, turnover: {23}, homeNotional: {24}, timestamp: {25}, last: {26}, change: {27}, percentage: {28}, average: {29}, Orderbook_asks_mean: {30}, Orderbook_asks_variance: {31}, Orderbook_asks_std: {32}, Orderbook_bids_mean: {33}, Orderbook_bids_variance: {34}, Orderbook_bids_std: {35}, BuyCount: {36}, SellCount: {37}, PendingCount: {38}, BUY_LotAmount: {39}, SELL_LotAmount: {40}, flg_getJsonError: {41}, turnover24h: {42}, impactBidPrice: {43}, impactAskPrice: {44}, volume24h: {45}, PendingPrice: {46}, NONE: {47}".format(
-        state[0], state[1], state[2], state[3], state[4], state[5], state[6], state[7], state[8], state[9], state[10], state[11], state[12], state[13], state[14], state[15], state[16], state[17], state[18], state[19], state[20], state[21], state[22], state[23], state[24], state[25], state[26], state[27], state[28], state[29], state[30], state[31], state[32], state[33], state[34], state[35], state[36], state[37], state[38], state[39], state[40], state[41], state[42], state[43], state[44], state[45], state[46], state[47]))
+    print("state : free_XBT:{0}, used_XBT:{1}, total_XBT:{2}, Ask_price:{3}, Ask_amount:{4}, Bid_price:{5}, Bid_amount:{6}, date.year:{7}, date.month:{8}, date.day:{9}, date.hour:{10}, date.minute:{11}, date.second:{12}, date.microsecond:{13}, date.weekday():{14}, open:{15}, high:{16}, low:{17}, close:{18}, trades:{19}, volume:{20}, vwap:{21}, lastSize:{22}, turnover: {23}, homeNotional: {24}, timestamp: {25}, last: {26}, change: {27}, percentage: {28}, average: {29}, Orderbook_asks_mean: {30}, Orderbook_asks_variance: {31}, Orderbook_asks_std: {32}, Orderbook_bids_mean: {33}, Orderbook_bids_variance: {34}, Orderbook_bids_std: {35}, BuyCount: {36}, SellCount: {37}, PendingCount: {38}, BUY_LotAmount: {39}, SELL_LotAmount: {40}, flg_getJsonError: {41}, turnover24h: {42}, impactBidPrice: {43}, impactAskPrice: {44}, volume24h: {45}, PendingPrice: {46}, Orderbook5_asks_mean: {47}, Orderbook5_asks_variance: {48}, Orderbook5_asks_std: {49}, Orderbook5_bids_mean: {50}, Orderbook5_bids_variance: {51}, Orderbook5_bids_std: {52}, NONE: {53}, NONE: {54}, NONE: {55}, NONE: {56}, NONE: {57}".format(
+        state[0], state[1], state[2], state[3], state[4], state[5], state[6], state[7], state[8], state[9], state[10], state[11], state[12], state[13], state[14], state[15], state[16], state[17], state[18], state[19], state[20], state[21], state[22], state[23], state[24], state[25], state[26], state[27], state[28], state[29], state[30], state[31], state[32], state[33], state[34], state[35], state[36], state[37], state[38], state[39], state[40], state[41], state[42], state[43], state[44], state[45], state[46], state[47], state[48], state[49], state[50], state[51], state[52], state[53], state[54], state[55], state[56], state[57]))
 
     return state
 
@@ -175,7 +212,8 @@ def get_State():
 
 if __name__ == '__main__':
 
-    obs = get_State()
+    # obs = get_State()
     # cancel_Orders()
+    Bid_price, Ask_price, BuyCount, SellCount, BUY_LotAmount, SELL_LotAmount = get_State_forAction()
 
     print(obs)

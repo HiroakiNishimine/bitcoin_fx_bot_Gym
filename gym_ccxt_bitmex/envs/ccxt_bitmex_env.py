@@ -6,7 +6,7 @@ from gym import utils
 from gym.utils import seeding
 import numpy as np
 import math
-from ccxt_bitmex_util1 import get_State, order_Buy, order_Sell, cancel_Orders
+from ccxt_bitmex_util1 import get_State, get_State_forAction, order_Buy, order_Sell, cancel_Orders
 import datetime
 
 import logging
@@ -23,8 +23,8 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
 
     def __init__(self):
 
-        self.action_space = spaces.Discrete(8)
-        self.observation_space = spaces.Box(low=-float('inf'), high=float('inf'), shape=(48,))
+        self.action_space = spaces.Discrete(14)
+        self.observation_space = spaces.Box(low=-float('inf'), high=float('inf'), shape=(58,))
 
         self.status = None
         self.seed()
@@ -38,9 +38,12 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
         global step
 
         step = step + 1
-        observation = get_State()
-        Bid_price, Ask_price = observation[5], observation[3]
-        self._take_action(action, Bid_price, Ask_price)
+        Bid_price, Ask_price, BuyCount, SellCount, BUY_LotAmount, SELL_LotAmount, flg_getJsonError = get_State_forAction()
+
+        if flg_getJsonError == 0:
+            self._take_action(action, Bid_price, Ask_price, BuyCount,
+                            SellCount, BUY_LotAmount, SELL_LotAmount)
+                 
         self.status = 1
         observation = get_State()
         flg_getJsonError = observation[41]
@@ -54,7 +57,7 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
 
         return observation, reward, episode_over, {}
 
-    def _take_action(self, action, Bid_price, Ask_price):
+    def _take_action(self, action, Bid_price, Ask_price, BuyCount, SellCount, BUY_LotAmount, SELL_LotAmount):
         if action == 0:
             print("action == buy")
             order_Buy(symbol='BTC/USD', type='limit', side='buy', amount=20.0, price= Bid_price)
@@ -85,34 +88,71 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
         elif action == 7:
             print("action == cancel orders")
             cancel_Orders()
+       
+        elif action == 8:
+            print("action == sell all")
+            if BuyCount:
+                order_Sell(symbol='BTC/USD', type='limit', side='sell',
+                           amount=BUY_LotAmount, price=Ask_price)
+        
+        elif action == 9:
+            print("action == sell all +")
+            if BuyCount:
+                order_Sell(symbol='BTC/USD', type='limit', side='sell',
+                           amount=BUY_LotAmount, price=Ask_price+0.5)
+
+        elif action == 10:
+            print("action == sell all -")
+            if BuyCount:
+                order_Sell(symbol='BTC/USD', type='limit', side='sell',
+                           amount=BUY_LotAmount, price=Ask_price-0.5)
+        
+        elif action == 11:
+            print("action == buy all")
+            if SellCount:
+                order_Buy(symbol='BTC/USD', type='limit', side='buy',
+                          amount=SELL_LotAmount, price=Bid_price)
+
+        elif action == 12:
+            print("action == buy all +")
+            if SellCount:
+                order_Buy(symbol='BTC/USD', type='limit', side='buy',
+                          amount=SELL_LotAmount, price=Bid_price+0.5)
+
+        elif action == 13:
+            print("action == buy all -")
+            if SellCount:
+                order_Buy(symbol='BTC/USD', type='limit', side='buy',
+                          amount=SELL_LotAmount, price=Bid_price-0.5)
 
     def _get_reward(self, observation, step, flg_getJsonError):
         global start_total_XBT, prev_reward
         # free XBTがstart時点より増えると報酬、減ると罰
-        reward = (observation[2] - start_total_XBT)* 1000000 # observation[2] : total XBT
-        print("【{0}step, total XBT : {1}, reward : {2}, {3}XBT】".format(
-            step, observation[2], reward, (observation[2] - start_total_XBT)))
-
-        date = datetime.datetime.now()
-        with open('ccxt_bitmex_log_2018_07_12.csv','a',newline='') as f:
-            writer = csv.writer(f)
-            writer.writerow(['time', date, 'total XBT', observation[2], 'reward',reward])
-        
+        reward = (observation[2] - start_total_XBT)* 700000 # observation[2] : total XBT, rewardが円とほぼ同じになる。
         if flg_getJsonError >= 1:
             reward = prev_reward
         else:
             prev_reward = reward
+        print("【{0}step, total XBT : {1}, reward : {2}(円), {3} XBT】".format(
+            step, observation[2], reward, (observation[2] - start_total_XBT)))
 
+        date = datetime.datetime.now()
+        with open('ccxt_bitmex_log_2018_07_13.csv','a',newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow(['time', date, 'total XBT', observation[2], 'reward',reward])
+        
         return reward
 
     def reset(self):
-        # self.state = self.np_random.uniform(low=-0.05, high=0.05, size=(48,))
         global start_total_XBT
+        global step
+
+        step = 0
         self.state = get_State()
         start_total_XBT = self.state[2]
         print("start_total_XBT : {}".format(start_total_XBT))
 
-        with open('ccxt_bitmex_log_2018_07_12.csv','a',newline='') as f:
+        with open('ccxt_bitmex_log_2018_07_13.csv','a',newline='') as f:
             writer = csv.writer(f)
             writer.writerow(['start_total_XBT', start_total_XBT])
 

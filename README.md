@@ -15,9 +15,9 @@ $ pip install ccxt
 $ pip install simplejson
 
 run by LSTM
-$ python ccxt_bitmex_main.py --lstm
+$ python ccxt_bitmex_main.py --lstm 1
 run by MLP
-$ python ccxt_bitmex_main.py --mlp
+$ python ccxt_bitmex_main.py --mlp 1
 
 ```
 

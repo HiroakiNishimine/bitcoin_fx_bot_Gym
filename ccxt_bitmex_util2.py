@@ -60,8 +60,10 @@ def getJson(label, flg_getJsonError):
            return bitmex().fetch_open_orders(symbol=Symbol,  limit=500), flg_getJsonError
        
        elif label == "orderbook":
-        #    return bitmex().fetch_order_book(Symbol, limit=100), flg_getJsonError
            return bitmex().fetch_order_book(Symbol), flg_getJsonError
+
+       elif label == "5orderbook":
+           return bitmex().fetch_order_book(Symbol, limit=5), flg_getJsonError
 
        else:
            return None

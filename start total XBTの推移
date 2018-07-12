@@ -1,2 +1,10 @@
 start total XBTの推移
-2018/07/12 0:00 : 0.0120848XBT
+
+MLP
+2018/07/11 20:00: 0.0100000XBT
+2018/07/12 0:00 : 0.0120848XBT 
+結果：/home/farmhouse/bitmex/bitcoin_fx_bot/dqn_ccxt_bitmex-v0_weights_2018_7_12_7_33.h5f
+
+2018/07/12 8:18 : 0.01134736XBT
+結果：/home/farmhouse/bitmex/bitcoin_fx_bot/dqn_ccxt_bitmex-v0_weights_2018_7_12_20_28.h5f
+学習終了：0.01064662XBT（トータル+6%）

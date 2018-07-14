@@ -15,8 +15,9 @@ logger = logging.getLogger(__name__)
 
 # global variables
 start_total_XBT = 0.0
-step = 0
 prev_reward = 0.0
+step = 0
+total_step = 0
 
 class CcxtBitmexEnv(gym.Env, utils.EzPickle):
     metadata = {'render.modes': ['human']}
@@ -35,9 +36,10 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
 
     def step(self, action):
         global start_total_XBT
-        global step
+        global step, total_step
 
         step = step + 1
+        total_step = total_step + 1
         Bid_price, Ask_price, BuyCount, SellCount, BUY_LotAmount, SELL_LotAmount, flg_getJsonError = get_State_forAction()
 
         if flg_getJsonError == 0:
@@ -58,32 +60,39 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
         return observation, reward, episode_over, {}
 
     def _take_action(self, action, Bid_price, Ask_price, BuyCount, SellCount, BUY_LotAmount, SELL_LotAmount):
+        print("")
         if action == 0:
             print("action == buy")
-            order_Buy(symbol='BTC/USD', type='limit', side='buy', amount=20.0, price= Bid_price)
+            flg_getJsonError = order_Buy(
+                symbol='BTC/USD', type='limit', side='buy', amount=20.0, price=Bid_price)
 
         elif action == 1:
             print("action == stay")
 
         elif action == 2:
             print("action == sell")
-            order_Sell(symbol='BTC/USD', type='limit', side='sell', amount=20.0, price=Ask_price)
+            flg_getJsonError = order_Sell(
+                symbol='BTC/USD', type='limit', side='sell', amount=20.0, price=Ask_price)
         
         elif action == 3:
             print("action == buy +")
-            order_Buy(symbol='BTC/USD', type='limit', side='buy', amount=20.0, price=Bid_price+0.5)
+            flg_getJsonError = order_Buy(
+                symbol='BTC/USD', type='limit', side='buy', amount=20.0, price=Bid_price+0.5)
         
         elif action == 4:
             print("action == buy -")
-            order_Buy(symbol='BTC/USD', type='limit', side='buy', amount=20.0, price=Bid_price-0.5)
+            flg_getJsonError = order_Buy(
+                symbol='BTC/USD', type='limit', side='buy', amount=20.0, price=Bid_price-0.5)
 
         elif action == 5:
             print("action == sell +")
-            order_Sell(symbol='BTC/USD', type='limit', side='sell', amount=20.0, price=Ask_price+0.5)
+            flg_getJsonError = order_Sell(
+                symbol='BTC/USD', type='limit', side='sell', amount=20.0, price=Ask_price+0.5)
 
         elif action == 6:
             print("action == sell -")
-            order_Sell(symbol='BTC/USD', type='limit', side='sell', amount=20.0, price=Ask_price-0.5)
+            flg_getJsonError = order_Sell(
+                symbol='BTC/USD', type='limit', side='sell', amount=20.0, price=Ask_price-0.5)
         
         elif action == 7:
             print("action == cancel orders")
@@ -92,37 +101,37 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
         elif action == 8:
             print("action == sell all")
             if BuyCount:
-                order_Sell(symbol='BTC/USD', type='limit', side='sell',
+                flg_getJsonError = order_Sell(symbol='BTC/USD', type='limit', side='sell',
                            amount=BUY_LotAmount, price=Ask_price)
         
         elif action == 9:
             print("action == sell all +")
             if BuyCount:
-                order_Sell(symbol='BTC/USD', type='limit', side='sell',
+                flg_getJsonError = order_Sell(symbol='BTC/USD', type='limit', side='sell',
                            amount=BUY_LotAmount, price=Ask_price+0.5)
 
         elif action == 10:
             print("action == sell all -")
             if BuyCount:
-                order_Sell(symbol='BTC/USD', type='limit', side='sell',
+                flg_getJsonError = order_Sell(symbol='BTC/USD', type='limit', side='sell',
                            amount=BUY_LotAmount, price=Ask_price-0.5)
         
         elif action == 11:
             print("action == buy all")
             if SellCount:
-                order_Buy(symbol='BTC/USD', type='limit', side='buy',
+                flg_getJsonError = order_Buy(symbol='BTC/USD', type='limit', side='buy',
                           amount=SELL_LotAmount, price=Bid_price)
 
         elif action == 12:
             print("action == buy all +")
             if SellCount:
-                order_Buy(symbol='BTC/USD', type='limit', side='buy',
+                flg_getJsonError = order_Buy(symbol='BTC/USD', type='limit', side='buy',
                           amount=SELL_LotAmount, price=Bid_price+0.5)
 
         elif action == 13:
             print("action == buy all -")
             if SellCount:
-                order_Buy(symbol='BTC/USD', type='limit', side='buy',
+                flg_getJsonError = order_Buy(symbol='BTC/USD', type='limit', side='buy',
                           amount=SELL_LotAmount, price=Bid_price-0.5)
 
     def _get_reward(self, observation, step, flg_getJsonError):
@@ -133,11 +142,11 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
             reward = prev_reward
         else:
             prev_reward = reward
-        print("【{0}step, total XBT : {1}, reward : {2}(円), {3} XBT】".format(
-            step, observation[2], reward, (observation[2] - start_total_XBT)))
+        print("【{0}step, {1}total_step, total XBT : {2}, reward : {3}(円), {4} XBT】".format(
+            step, total_step, observation[2], reward, (observation[2] - start_total_XBT)))
 
         date = datetime.datetime.now()
-        with open('ccxt_bitmex_log_2018_07_13.csv','a',newline='') as f:
+        with open('csv/ccxt_bitmex_log_2018_07_15.csv','a',newline='') as f:
             writer = csv.writer(f)
             writer.writerow(['time', date, 'total XBT', observation[2], 'reward',reward])
         
@@ -152,7 +161,7 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
         start_total_XBT = self.state[2]
         print("start_total_XBT : {}".format(start_total_XBT))
 
-        with open('ccxt_bitmex_log_2018_07_13.csv','a',newline='') as f:
+        with open('csv/ccxt_bitmex_log_2018_07_15.csv','a',newline='') as f:
             writer = csv.writer(f)
             writer.writerow(['start_total_XBT', start_total_XBT])
 

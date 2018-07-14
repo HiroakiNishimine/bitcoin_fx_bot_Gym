@@ -4,6 +4,7 @@ import numpy as np
 import gym
 import datetime
 import argparse
+import matplotlib.pyplot as plt
 from keras.models import Sequential
 from keras.layers import Dense, Activation, Flatten, BatchNormalization
 from keras.layers import CuDNNLSTM
@@ -48,6 +49,9 @@ if args.lstm:
     model.add(CuDNNLSTM(25, input_shape=(1,) + env.observation_space.shape))
     model.add(Dense(nb_actions))
     model.add(Activation('linear'))
+    print('load model...')
+    model.load_weights(
+        'weights/dqn_lstm_ccxt_bitmex-v0_weights_2018_7_15_0_12.h5f')
 if args.mlp:
     model = Sequential()
     model.add(Flatten(input_shape=(1,) + env.observation_space.shape))
@@ -81,18 +85,32 @@ dqn.compile(Adam(lr=1e-3), metrics=['mae'])
 # slows down training quite a lot. You can always safely abort the training prematurely using
 # Ctrl + C.
 print('Fit model...')
-dqn.fit(env, nb_steps=10000, visualize=False, verbose=2) # 1step:36sec, 1000step:10hours
+dqn.fit(env, nb_steps=10000, visualize=False,
+               verbose=1)  # 1step:36sec, 1000step:10hours
 
 # After training is done, we save the final weights.
 date = datetime.datetime.now()
 
 print('Save model...')
 if args.lstm:
-    dqn.save_weights('dqn_lstm_{0}_weights_{1}_{2}_{3}_{4}_{5}.h5f'.format(
+    dqn.save_weights('weights/dqn_lstm_{0}_weights_{1}_{2}_{3}_{4}_{5}.h5f'.format(
         ENV_NAME, date.year, date.month, date.day, date.hour, date.minute), overwrite=False)
 if args.mlp:
-    dqn.save_weights('dqn_mlp_{0}_weights_{1}_{2}_{3}_{4}_{5}.h5f'.format(
+    dqn.save_weights('weights/dqn_mlp_{0}_weights_{1}_{2}_{3}_{4}_{5}.h5f'.format(
         ENV_NAME, date.year, date.month, date.day, date.hour, date.minute), overwrite=False)
 
 # Finally, evaluate our algorithm for 5 episodes.
 # dqn.test(env, nb_episodes=5, visualize=True)
+
+# plot results
+# loss = hist.history['loss']
+# val_loss = hist.history['val_loss']
+
+# epochs = len(loss)
+# plt.plot(range(epochs), loss, marker='.', label='acc')
+# plt.plot(range(epochs), val_loss, marker='.', label='val_acc')
+# plt.legend(loc='best')
+# plt.grid()
+# plt.xlabel('epoch')
+# plt.ylabel('acc')
+# plt.show()

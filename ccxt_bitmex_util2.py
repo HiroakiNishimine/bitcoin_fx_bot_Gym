@@ -27,15 +27,15 @@ def bitmex():
   bitmex = ccxt.bitmex({
 
       #APIキーをご自分のものに差し替えてください(aki-first-apikey)
-       'apiKey': 'RsJtux8sro3BloRYnrFYSK5G',
-       'secret': 'jL4J5PUeGt99xMMuXD0VWwZ9LMVjm0-FfUMRb_mX6HLaR32E',
+    #    'apiKey': 'RsJtux8sro3BloRYnrFYSK5G',
+    #    'secret': 'jL4J5PUeGt99xMMuXD0VWwZ9LMVjm0-FfUMRb_mX6HLaR32E',
       #APIキーをご自分のものに差し替えてください(aki-testnet-apikey)
-    #    'apiKey': 'TE-RZiKawBkCjzCeeZRlmYqk',
-    #    'secret': 'oWtAaqTrgSL1evIaUp78IHqydVP3f48H5Q0LI2wV89HjsWo3',
+       'apiKey': 'TE-RZiKawBkCjzCeeZRlmYqk',
+       'secret': 'oWtAaqTrgSL1evIaUp78IHqydVP3f48H5Q0LI2wV89HjsWo3',
 
       })
   
-#   bitmex.urls['api'] = bitmex.urls['test'] #テスト用 本番口座の場合は不要
+  bitmex.urls['api'] = bitmex.urls['test'] #testnet使用時に有効化する 本番口座の場合は不要
   
   return bitmex
 
@@ -136,7 +136,7 @@ def getBalance(json_obj, label):
    else:
        return 0
 
-#ポジショ数取得   
+#ポジション数取得   
 def getPositions(json_obj, Symbol, label):
     
    try:
@@ -267,11 +267,13 @@ def NewOrder(Order_Symbol, Order_Type, Order_Side, Amount, Price):
         print("amount : {}".format(Amount))
         # Amount USD分、Price USDで購入 or 売却 
         res = bitmex().create_order(Order_Symbol, type=Order_Type, side=Order_Side, amount=Amount, price=Price)
-        return res
+        flg_getJsonError = 0
+        return res, flg_getJsonError
 
     except Exception as e:
         print(TimeCurrent(), " Exception => NewOrder: ", str(e))
-        return 0
+        flg_getJsonError = 1
+        return 0, flg_getJsonError
 
 
 #オーダーのキャンセル

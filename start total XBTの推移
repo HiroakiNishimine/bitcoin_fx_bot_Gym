@@ -8,3 +8,10 @@ MLP
 2018/07/12 8:18 : 0.01134736XBT
 結果：/home/farmhouse/bitmex/bitcoin_fx_bot/dqn_ccxt_bitmex-v0_weights_2018_7_12_20_28.h5f
 学習終了：0.01064662XBT（トータル+6%）
+
+
+LSTM
+2018/07/12 22:21 : 0.01067744XBT
+2018/07/13 21:52 : 0.00840933XBT / dqn_lstm_ccxt_bitmex-v0_weights_2018_7_13_21_30.h5f
+2018/07/14 09:30 : 0.00743039XBT / dqn_lstm_ccxt_bitmex-v0_weights_2018_7_14_9_29.h5f
+2018/07/14 09:30 : 0.00000000XBT / dqn_lstm_ccxt_bitmex-v0_weights_2018_7_14_19_3.h5f

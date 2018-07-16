@@ -15,3 +15,12 @@ LSTM
 2018/07/13 21:52 : 0.00840933XBT / dqn_lstm_ccxt_bitmex-v0_weights_2018_7_13_21_30.h5f
 2018/07/14 09:30 : 0.00743039XBT / dqn_lstm_ccxt_bitmex-v0_weights_2018_7_14_9_29.h5f
 2018/07/14 09:30 : 0.00000000XBT / dqn_lstm_ccxt_bitmex-v0_weights_2018_7_14_19_3.h5f
+
+
+初め　0.85932033
+2018-07-16 06:51:38.952869 ：　0.86457428XBT　/ /home/farmhouse/bitmex/bitcoin_fx_bot/weights/dqn_lstm_ccxt_bitmex-v0_weights_2018_7_16_6_52.h5f 相場が上がってtestnetで買いばかり行ったため急騰した
+2018/-7/16         total XBT : 0.8599037XBT 下げトレンドに変わったが、buyばかりしたので大きく負けた。→マイナス方向に二倍の罰を与えることにした。
+2018/07-17/00:00           :   0.8746 buyばかり行い、上げトレンドだったため大きく利益を伸ばした。
+
+2018/07-17/00:00 : 0.00810177XBT
+2018/07/17 03:15 : 0.01090301XBT 0.002BTC（内送金手数料0.0005BTC）をBTCで出金 /home/farmhouse/bitmex/bitcoin_fx_bot/weights/dqn_lstm_ccxt_bitmex-v0_weights_2018_7_17_3_0.h5f

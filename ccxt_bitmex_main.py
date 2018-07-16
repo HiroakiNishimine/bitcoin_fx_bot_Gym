@@ -51,7 +51,7 @@ if args.lstm:
     model.add(Activation('linear'))
     print('load model...')
     model.load_weights(
-        'weights/dqn_lstm_ccxt_bitmex-v0_weights_2018_7_15_0_12.h5f')
+        'weights/dqn_lstm_ccxt_bitmex-v0_weights_2018_7_17_3_0.h5f')
 if args.mlp:
     model = Sequential()
     model.add(Flatten(input_shape=(1,) + env.observation_space.shape))

@@ -6,7 +6,7 @@ from gym import utils
 from gym.utils import seeding
 import numpy as np
 import math
-from ccxt_bitmex_util1 import get_State, get_State_forAction, order_Buy, order_Sell, cancel_Orders
+from ccxt_bitmex_util1 import get_State, get_State_forAction, order_Buy, order_Sell, cancel_Orders, withdrawXBT
 import datetime
 
 import logging
@@ -18,6 +18,8 @@ start_total_XBT = 0.0
 prev_reward = 0.0
 step = 0
 total_step = 0
+flg_BuyFinishedError = 0
+flg_SellFinishedError = 0
 
 class CcxtBitmexEnv(gym.Env, utils.EzPickle):
     metadata = {'render.modes': ['human']}
@@ -35,19 +37,19 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
         return [seed]
 
     def step(self, action):
-        global start_total_XBT
-        global step, total_step
+        global start_total_XBT, step, total_step
+        global flg_BuyFinishedError, flg_SellFinishedError
 
         step = step + 1
         total_step = total_step + 1
-        Bid_price, Ask_price, BuyCount, SellCount, BUY_LotAmount, SELL_LotAmount, flg_getJsonError = get_State_forAction()
+        Bid_price, Ask_price, BuyCount, SellCount, BUY_LotAmount, SELL_LotAmount, flg_getJsonError, PendingCount = get_State_forAction()
 
         if flg_getJsonError == 0:
             self._take_action(action, Bid_price, Ask_price, BuyCount,
-                            SellCount, BUY_LotAmount, SELL_LotAmount)
+                            SellCount, BUY_LotAmount, SELL_LotAmount, PendingCount)
                  
         self.status = 1
-        observation = get_State()
+        observation = get_State(flg_BuyFinishedError, flg_SellFinishedError)
         flg_getJsonError = observation[41]
         reward = self._get_reward(observation, step, flg_getJsonError)
 
@@ -59,85 +61,140 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
 
         return observation, reward, episode_over, {}
 
-    def _take_action(self, action, Bid_price, Ask_price, BuyCount, SellCount, BUY_LotAmount, SELL_LotAmount):
+    def _take_action(self, action, Bid_price, Ask_price, BuyCount, SellCount, BUY_LotAmount, SELL_LotAmount, PendingCount):
+        global flg_BuyFinishedError, flg_SellFinishedError
+
         print("")
         if action == 0:
             print("action == buy")
-            flg_getJsonError = order_Buy(
-                symbol='BTC/USD', type='limit', side='buy', amount=20.0, price=Bid_price)
+            if flg_BuyFinishedError == 0:
+                flg_BuyFinishedError = order_Buy(
+                    symbol='BTC/USD', type='limit', side='buy', amount=20.0, price=Bid_price)
+                flg_SellFinishedError = 0
+            else:
+                print("flg_BuyFinishedError is {}. We can't buy anymore!".format(flg_BuyFinishedError))
 
         elif action == 1:
             print("action == stay")
 
         elif action == 2:
             print("action == sell")
-            flg_getJsonError = order_Sell(
-                symbol='BTC/USD', type='limit', side='sell', amount=20.0, price=Ask_price)
+            if flg_SellFinishedError == 0:
+                flg_SellFinishedError = order_Sell(
+                    symbol='BTC/USD', type='limit', side='sell', amount=20.0, price=Ask_price)
+                flg_BuyFinishedError = 0
+            else:
+                print("flg_SellFinishedError is {}. We can't sell anymore!".format(flg_SellFinishedError))
         
         elif action == 3:
             print("action == buy +")
-            flg_getJsonError = order_Buy(
-                symbol='BTC/USD', type='limit', side='buy', amount=20.0, price=Bid_price+0.5)
+            if flg_BuyFinishedError == 0:
+                flg_BuyFinishedError = order_Buy(
+                    symbol='BTC/USD', type='limit', side='buy', amount=20.0, price=Bid_price+0.5)
+                flg_SellFinishedError = 0
+            else:
+                print("flg_BuyFinishedError is {}. We can't buy anymore!".format(flg_BuyFinishedError))
         
         elif action == 4:
             print("action == buy -")
-            flg_getJsonError = order_Buy(
-                symbol='BTC/USD', type='limit', side='buy', amount=20.0, price=Bid_price-0.5)
+            if flg_BuyFinishedError == 0:
+                flg_BuyFinishedError = order_Buy(
+                    symbol='BTC/USD', type='limit', side='buy', amount=20.0, price=Bid_price-0.5)
+                flg_SellFinishedError = 0
+            else:
+                print("flg_BuyFinishedError is {}. We can't buy anymore!".format(flg_BuyFinishedError))
 
         elif action == 5:
             print("action == sell +")
-            flg_getJsonError = order_Sell(
-                symbol='BTC/USD', type='limit', side='sell', amount=20.0, price=Ask_price+0.5)
+            if flg_SellFinishedError == 0:
+                flg_SellFinishedError = order_Sell(
+                    symbol='BTC/USD', type='limit', side='sell', amount=20.0, price=Ask_price+0.5)
+                flg_BuyFinishedError = 0
+            else:
+                print("flg_SellFinishedError is {}. We can't sell anymore!".format(flg_SellFinishedError))
 
         elif action == 6:
             print("action == sell -")
-            flg_getJsonError = order_Sell(
-                symbol='BTC/USD', type='limit', side='sell', amount=20.0, price=Ask_price-0.5)
+            if flg_SellFinishedError == 0:
+                flg_SellFinishedError = order_Sell(
+                    symbol='BTC/USD', type='limit', side='sell', amount=20.0, price=Ask_price-0.5)
+                flg_BuyFinishedError = 0
+            else:
+                print("flg_SellFinishedError is {}. We can't sell anymore!".format(flg_SellFinishedError))
         
         elif action == 7:
-            print("action == cancel orders")
-            cancel_Orders()
+            if PendingCount > 0:
+                print("action == cancel orders")
+                cancel_Orders()
+            else:
+                print("no cancel orders.")
        
         elif action == 8:
             print("action == sell all")
-            if BuyCount:
-                flg_getJsonError = order_Sell(symbol='BTC/USD', type='limit', side='sell',
-                           amount=BUY_LotAmount, price=Ask_price)
-        
+            if flg_SellFinishedError == 0:
+                if BuyCount:
+                    flg_SellFinishedError = order_Sell(symbol='BTC/USD', type='limit', side='sell',
+                            amount=BUY_LotAmount, price=Ask_price)
+                    flg_BuyFinishedError = 0
+            else:
+                print("flg_SellFinishedError is {}. We can't sell anymore!".format(flg_SellFinishedError))
+            
         elif action == 9:
             print("action == sell all +")
-            if BuyCount:
-                flg_getJsonError = order_Sell(symbol='BTC/USD', type='limit', side='sell',
-                           amount=BUY_LotAmount, price=Ask_price+0.5)
+            if flg_SellFinishedError == 0:
+                if BuyCount:
+                    flg_SellFinishedError = order_Sell(symbol='BTC/USD', type='limit', side='sell',
+                            amount=BUY_LotAmount, price=Ask_price+0.5)
+                    flg_BuyFinishedError = 0
+            else:
+                print("flg_SellFinishedError is {}. We can't sell anymore!".format(flg_SellFinishedError))
 
         elif action == 10:
             print("action == sell all -")
-            if BuyCount:
-                flg_getJsonError = order_Sell(symbol='BTC/USD', type='limit', side='sell',
-                           amount=BUY_LotAmount, price=Ask_price-0.5)
+            if flg_SellFinishedError == 0:
+                if BuyCount:
+                    flg_SellFinishedError = order_Sell(symbol='BTC/USD', type='limit', side='sell',
+                            amount=BUY_LotAmount, price=Ask_price-0.5)
+                    flg_BuyFinishedError = 0
+            else:
+                print("flg_SellFinishedError is {}. We can't sell anymore!".format(flg_SellFinishedError))
         
         elif action == 11:
             print("action == buy all")
-            if SellCount:
-                flg_getJsonError = order_Buy(symbol='BTC/USD', type='limit', side='buy',
-                          amount=SELL_LotAmount, price=Bid_price)
+            if flg_BuyFinishedError == 0:
+                if SellCount:
+                    flg_BuyFinishedError = order_Buy(symbol='BTC/USD', type='limit', side='buy',
+                            amount=SELL_LotAmount, price=Bid_price)
+                    flg_SellFinishedError = 0
+            else:
+                print("flg_BuyFinishedError is {}. We can't buy anymore!".format(flg_BuyFinishedError))
 
         elif action == 12:
             print("action == buy all +")
-            if SellCount:
-                flg_getJsonError = order_Buy(symbol='BTC/USD', type='limit', side='buy',
-                          amount=SELL_LotAmount, price=Bid_price+0.5)
+            if flg_BuyFinishedError == 0:
+                if SellCount:
+                    flg_BuyFinishedError = order_Buy(symbol='BTC/USD', type='limit', side='buy',
+                            amount=SELL_LotAmount, price=Bid_price+0.5)
+                    flg_SellFinishedError = 0
+            else:
+                print("flg_BuyFinishedError is {}. We can't buy anymore!".format(flg_BuyFinishedError))
 
         elif action == 13:
             print("action == buy all -")
-            if SellCount:
-                flg_getJsonError = order_Buy(symbol='BTC/USD', type='limit', side='buy',
-                          amount=SELL_LotAmount, price=Bid_price-0.5)
+            if flg_BuyFinishedError == 0:
+                if SellCount:
+                    flg_BuyFinishedError = order_Buy(symbol='BTC/USD', type='limit', side='buy',
+                            amount=SELL_LotAmount, price=Bid_price-0.5)
+                    flg_SellFinishedError = 0
+            else:
+                print("flg_BuyFinishedError is {}. We can't buy anymore!".format(flg_BuyFinishedError))
+    
 
     def _get_reward(self, observation, step, flg_getJsonError):
         global start_total_XBT, prev_reward
+        total_XBT = observation[2] # observation[2] : total XBT
         # free XBTがstart時点より増えると報酬、減ると罰
-        reward = (observation[2] - start_total_XBT)* 700000 # observation[2] : total XBT, rewardが円とほぼ同じになる。
+        reward = (total_XBT - start_total_XBT)* 700000 # rewardが円とほぼ同じになる。
         if reward < 0: # マイナス方向には5倍の罰を与える
             reward = 5 * reward
 
@@ -153,14 +210,18 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
             writer = csv.writer(f)
             writer.writerow(['time', date, 'total XBT', observation[2], 'reward',reward])
         
+        # if total_XBT > 0.001:
+        #     withdrawXBT()
+        #     reward = reward + 2000 # 1400円ほど引き出すので、2000円分の報酬を与える
+
         return reward
 
     def reset(self):
-        global start_total_XBT
-        global step
+        global start_total_XBT, step 
+        global flg_BuyFinishedError, flg_SellFinishedError
 
         step = 0
-        self.state = get_State()
+        self.state = get_State(flg_BuyFinishedError, flg_SellFinishedError)
         start_total_XBT = self.state[2]
         print("start_total_XBT : {}".format(start_total_XBT))
 

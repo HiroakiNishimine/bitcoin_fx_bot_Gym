@@ -267,13 +267,13 @@ def NewOrder(Order_Symbol, Order_Type, Order_Side, Amount, Price):
         print("amount : {}".format(Amount))
         # Amount USD分、Price USDで購入 or 売却 
         res = bitmex().create_order(Order_Symbol, type=Order_Type, side=Order_Side, amount=Amount, price=Price)
-        flg_getJsonError = 0
-        return res, flg_getJsonError
+        flg_FinishedError = 0
+        return res, flg_FinishedError
 
     except Exception as e:
         print(TimeCurrent(), " Exception => NewOrder: ", str(e))
-        flg_getJsonError = 1
-        return 0, flg_getJsonError
+        flg_FinishedError = 1
+        return 0, flg_FinishedError
 
 
 #オーダーのキャンセル
@@ -373,6 +373,10 @@ def get_order_info(obj_Orderbook):
     return Ask_price, Ask_amount, Bid_price, Bid_amount, Orderbook_asks_mean, Orderbook_asks_variance, Orderbook_asks_std, Orderbook_bids_mean, Orderbook_bids_variance, Orderbook_bids_std
 
 
+# withdraw XBT to bitbank acount
+# def withdrawXBT():
+#     withdrawInfo = withdraw(currency='BTC', amount=0.002, address=33Yp7NdgQaMq9J6jA4BkUjVvwYSJKRdMVG, tag=None, params={})
+#     print(withdrawInfo)
 
 #NowTime
 def TimeCurrent():

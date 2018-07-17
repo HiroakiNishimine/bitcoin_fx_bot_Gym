@@ -23,4 +23,6 @@ LSTM
 2018/07-17/00:00           :   0.8746 buyばかり行い、上げトレンドだったため大きく利益を伸ばした。
 
 2018/07-17/00:00 : 0.00810177XBT
-2018/07/17 03:15 : 0.01090301XBT 0.002BTC（内送金手数料0.0005BTC）をBTCで出金 /home/farmhouse/bitmex/bitcoin_fx_bot/weights/dqn_lstm_ccxt_bitmex-v0_weights_2018_7_17_3_0.h5f
+2018/07/17 03:15 : 0.01090301XBT  /home/farmhouse/bitmex/bitcoin_fx_bot/weights/dqn_lstm_ccxt_bitmex-v0_weights_2018_7_17_3_0.h5f
+0.002BTC（内送金手数料0.0005BTC）をBTCで出金
+2018/07/17 03:27 : 0.00874774XBT

@@ -32,14 +32,14 @@ def cancel_Orders():
 #     print(cancel['status'] + ' ' + cancel['id'])
 
 def order_Buy(symbol='BTC/USD', type='limit', side='buy', amount=6.0, price=10000):
-    order_info, flg_getJsonError = NewOrder(symbol, type, side, amount, price)
+    order_info, flg_BuyFinishedError = NewOrder(symbol, type, side, amount, price)
     print("order info 【buy】: {}".format(order_info))
-    return flg_getJsonError
+    return flg_BuyFinishedError
 
 def order_Sell(symbol='BTC/USD', type='limit', side='sell', amount=6.0, price=10000):
-    order_info, flg_getJsonError = NewOrder(symbol, type, side, amount, price)
+    order_info, flg_SellFinishedError = NewOrder(symbol, type, side, amount, price)
     print("order info 【sell】: {}".format(order_info))
-    return flg_getJsonError
+    return flg_SellFinishedError
 
 
 def get_State_forAction():
@@ -66,10 +66,11 @@ def get_State_forAction():
     else:
         Bid_price, Ask_price, BuyCount, SellCount, BUY_LotAmount, SELL_LotAmount = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
 
-    return Bid_price, Ask_price, BuyCount, SellCount, BUY_LotAmount, SELL_LotAmount, flg_getJsonError
+    return Bid_price, Ask_price, BuyCount, SellCount, BUY_LotAmount, SELL_LotAmount, flg_getJsonError, PendingCount
 
-def get_State():
+def get_State(flg_BuyFinishedError, flg_SellFinishedError):
     global start_total_XBT
+
     timestamp = 0
 
     # getJsonErrorフラグの初期化
@@ -230,10 +231,10 @@ def get_State():
 
     state = (free_XBT, used_XBT, total_XBT, Ask_price, Ask_amount, Bid_price, Bid_amount, date.year, date.month, date.day, date.hour, date.minute, date.second, date.microsecond, date.weekday(), open, high, low, close, trades, volume, markPrice, lastSize,
              avgEntryPrice, currentQty, timestamp, last, change, percentage, average, Orderbook_asks_mean, Orderbook_asks_variance, Orderbook_asks_std, Orderbook_bids_mean, Orderbook_bids_variance, Orderbook_bids_std, BuyCount, SellCount, PendingCount,
-             BUY_LotAmount, SELL_LotAmount, flg_getJsonError, turnover24h, impactBidPrice, impactAskPrice, volume24h, PendingPrice1, Orderbook5_asks_mean, Orderbook5_asks_variance, Orderbook5_asks_std, Orderbook5_bids_mean, Orderbook5_bids_variance, 
+             BUY_LotAmount, SELL_LotAmount, flg_getJsonError, flg_BuyFinishedError, flg_SellFinishedError, turnover24h, volume24h, PendingPrice1, Orderbook5_asks_mean, Orderbook5_asks_variance, Orderbook5_asks_std, Orderbook5_bids_mean, Orderbook5_bids_variance, 
              Orderbook5_bids_std, PendingPrice2, PendingPrice3, PendingPrice4, PendingPrice5, PendingPrice6) 
     
-    print("state : free_XBT:{0}, used_XBT:{1}, total_XBT:{2}, Ask_price:{3}, Ask_amount:{4}, Bid_price:{5}, Bid_amount:{6}, date.year:{7}, date.month:{8}, date.day:{9}, date.hour:{10}, date.minute:{11}, date.second:{12}, date.microsecond:{13}, date.weekday():{14}, open:{15}, high:{16}, low:{17}, close:{18}, trades:{19}, volume:{20}, markPrice:{21}, lastSize:{22}, avgEntryPrice: {23}, currentQty: {24}, timestamp: {25}, last: {26}, change: {27}, percentage: {28}, average: {29}, Orderbook_asks_mean: {30}, Orderbook_asks_variance: {31}, Orderbook_asks_std: {32}, Orderbook_bids_mean: {33}, Orderbook_bids_variance: {34}, Orderbook_bids_std: {35}, BuyCount: {36}, SellCount: {37}, PendingCount: {38}, BUY_LotAmount: {39}, SELL_LotAmount: {40}, flg_getJsonError: {41}, turnover24h: {42}, impactBidPrice: {43}, impactAskPrice: {44}, volume24h: {45}, PendingPrice1: {46}, Orderbook5_asks_mean: {47}, Orderbook5_asks_variance: {48}, Orderbook5_asks_std: {49}, Orderbook5_bids_mean: {50}, Orderbook5_bids_variance: {51}, Orderbook5_bids_std: {52}, PendingPrice2: {53}, PendingPrice3: {54}, , PendingPrice4: {55}, , PendingPrice5: {56}, PendingPrice6: {57}".format(
+    print("state : free_XBT:{0}, used_XBT:{1}, total_XBT:{2}, Ask_price:{3}, Ask_amount:{4}, Bid_price:{5}, Bid_amount:{6}, date.year:{7}, date.month:{8}, date.day:{9}, date.hour:{10}, date.minute:{11}, date.second:{12}, date.microsecond:{13}, date.weekday():{14}, open:{15}, high:{16}, low:{17}, close:{18}, trades:{19}, volume:{20}, markPrice:{21}, lastSize:{22}, avgEntryPrice: {23}, currentQty: {24}, timestamp: {25}, last: {26}, change: {27}, percentage: {28}, average: {29}, Orderbook_asks_mean: {30}, Orderbook_asks_variance: {31}, Orderbook_asks_std: {32}, Orderbook_bids_mean: {33}, Orderbook_bids_variance: {34}, Orderbook_bids_std: {35}, BuyCount: {36}, SellCount: {37}, PendingCount: {38}, BUY_LotAmount: {39}, SELL_LotAmount: {40}, flg_getJsonError: {41}, flg_BuyFinishedError: {42}, flg_SellFinishedError: {43}, turnover24h: {44}, volume24h: {45}, PendingPrice1: {46}, Orderbook5_asks_mean: {47}, Orderbook5_asks_variance: {48}, Orderbook5_asks_std: {49}, Orderbook5_bids_mean: {50}, Orderbook5_bids_variance: {51}, Orderbook5_bids_std: {52}, PendingPrice2: {53}, PendingPrice3: {54}, , PendingPrice4: {55}, , PendingPrice5: {56}, PendingPrice6: {57}".format(
         state[0], state[1], state[2], state[3], state[4], state[5], state[6], state[7], state[8], state[9], state[10], state[11], state[12], state[13], state[14], state[15], state[16], state[17], state[18], state[19], state[20], state[21], state[22], state[23], state[24], state[25], state[26], state[27], state[28], state[29], state[30], state[31], state[32], state[33], state[34], state[35], state[36], state[37], state[38], state[39], state[40], state[41], state[42], state[43], state[44], state[45], state[46], state[47], state[48], state[49], state[50], state[51], state[52], state[53], state[54], state[55], state[56], state[57]))
 
     return state

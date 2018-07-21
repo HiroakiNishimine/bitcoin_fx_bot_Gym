@@ -28,9 +28,9 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
 
     def __init__(self):
 
-        self.action_space = spaces.Discrete(14)
-        self.observation_space = spaces.Box(low=-float('inf'), high=float('inf'), shape=(58,))
-
+        self.action_space = spaces.Discrete(17)
+        self.observation_space = spaces.Box(low=-float('inf'), high=float('inf'), shape=(63,))
+        self.reward_range = [-float('inf'), 10000.]
         self.status = None
         self.seed()
 
@@ -190,6 +190,13 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
                     flg_SellFinishedError = 0
             else:
                 print("flg_BuyFinishedError is {}. We can't buy anymore!".format(flg_BuyFinishedError))
+        
+        elif action == 14:
+            print("action == stay")
+        elif action == 15:
+            print("action == stay")
+        elif action == 16:
+            print("action == stay")
     
 
     def _get_reward(self, observation, step, flg_getJsonError):
@@ -198,12 +205,17 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
 
         free_XBT = observation[0] # observation[0] : free XBT
         total_XBT = observation[2] # observation[2] : total XBT
+        liquidationPrice = observation[45] # observation[45] : liquidationPrice
+        avgEntryPrice = observation[23] # observation[23] : avgEntryPrice
         # total XBTがstart時点より増えると報酬、減ると罰
         reward = (total_XBT - start_total_XBT)* 700000 # rewardが円とほぼ同じになる。
         if reward < 0: # マイナス方向には6倍の罰を与える
-            reward = 6 * reward
+            reward = (5 * reward) + (-10000 / (avgEntryPrice - liquidationPrice)) # (-10000 / (現在のエントリー価格 - 精算価格))
+            print("avgEntryPrice : {0}, liquidationPrice : {1}".format(avgEntryPrice, liquidationPrice))
         if WithdrawCnt > 1:
             reward = reward + (WithdrawCnt * 3000)  # 引き出した回数分のある程度の報酬（3000円分くらい？）を与える
+        if reward >= 10000:
+            reward = 10000.0 # 上限は10000
 
         if flg_getJsonError >= 1:
             reward = prev_reward
@@ -213,7 +225,7 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
             step, total_step, observation[2], reward, (observation[2] - start_total_XBT)))
 
         date = datetime.datetime.now()
-        with open('csv/ccxt_bitmex_log_2018_07_20.csv','a',newline='') as f:
+        with open('csv/ccxt_bitmex_log_2018_07_21.csv','a',newline='') as f:
             writer = csv.writer(f)
             writer.writerow(['time', date, 'total XBT', observation[2], 'reward',reward])
         
@@ -276,7 +288,7 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
         start_total_XBT = self.state[2]
         print("start_total_XBT : {}".format(start_total_XBT))
 
-        with open('csv/ccxt_bitmex_log_2018_07_20.csv','a',newline='') as f:
+        with open('csv/ccxt_bitmex_log_2018_07_21.csv','a',newline='') as f:
             writer = csv.writer(f)
             writer.writerow(['start_total_XBT', start_total_XBT])
 

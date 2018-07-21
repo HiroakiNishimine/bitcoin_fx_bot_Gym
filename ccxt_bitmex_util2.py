@@ -27,8 +27,11 @@ def bitmex():
   bitmex = ccxt.bitmex({
 
       #APIキーをご自分のものに差し替えてください(aki-first-apikey)
-       'apiKey': 'RsJtux8sro3BloRYnrFYSK5G',
-       'secret': 'jL4J5PUeGt99xMMuXD0VWwZ9LMVjm0-FfUMRb_mX6HLaR32E',
+    #    'apiKey': 'RsJtux8sro3BloRYnrFYSK5G',
+    #    'secret': 'jL4J5PUeGt99xMMuXD0VWwZ9LMVjm0-FfUMRb_mX6HLaR32E',
+      #APIキーをご自分のものに差し替えてください(aki-withdrawEnabled-apikey)
+       'apiKey': 'exKSJp5tSE2ejQZc6VLikPIp',
+       'secret': 'wjGtXca0MoE18OY47Hz0-GtuhZO_q3XJ3PPKnNgLRyuWAp4z',
       #APIキーをご自分のものに差し替えてください(aki-testnet-apikey)
     #    'apiKey': 'TE-RZiKawBkCjzCeeZRlmYqk',
     #    'secret': 'oWtAaqTrgSL1evIaUp78IHqydVP3f48H5Q0LI2wV89HjsWo3',
@@ -273,7 +276,7 @@ def NewOrder(Order_Symbol, Order_Type, Order_Side, Amount, Price):
     except Exception as e:
         print(TimeCurrent(), " Exception => NewOrder: ", str(e))
         flg_FinishedError = 1
-        return 0, flg_FinishedError
+        return e, flg_FinishedError
 
 
 #オーダーのキャンセル
@@ -373,21 +376,22 @@ def get_order_info(obj_Orderbook):
     return Ask_price, Ask_amount, Bid_price, Bid_amount, Orderbook_asks_mean, Orderbook_asks_variance, Orderbook_asks_std, Orderbook_bids_mean, Orderbook_bids_variance, Orderbook_bids_std
 
 
-# withdraw XBT to bitbank acount
-# def withdrawXBT():
-#     withdrawInfo = withdraw(currency='BTC', amount=0.002, address=33Yp7NdgQaMq9J6jA4BkUjVvwYSJKRdMVG, tag=None, params={})
-#     print(withdrawInfo)
+# withdraw XBT to bitbank acount. 33Yp7NdgQaMq9J6jA4BkUjVvwYSJKRdMVG is nishimine's bitbank acount wallet ID.
+def withdrawXBT():
+    withdrawInfo = bitmex().withdraw(currency='BTC', amount= 200000, address='33Yp7NdgQaMq9J6jA4BkUjVvwYSJKRdMVG', tag=None, params={})
+    print(withdrawInfo)
 
 #NowTime
 def TimeCurrent():
-   now = datetime.datetime.now()
-   return now
+    now = datetime.datetime.now()
+    return now
 
 
 if __name__ == '__main__':
-    date = datetime.datetime.now()
-    openOrder = bitmex().fetch_orders(
-        symbol='BTC/USD', since=1530931962340, limit=500)
-    closeOrder = bitmex().fetch_closed_orders(
-        symbol='BTC/USD', since=None, limit=500)
-    print(openOrder)
+    withdrawXBT()
+    # date = datetime.datetime.now()
+    # openOrder = bitmex().fetch_orders(
+    #     symbol='BTC/USD', since=1530931962340, limit=500)
+    # closeOrder = bitmex().fetch_closed_orders(
+    #     symbol='BTC/USD', since=None, limit=500)
+    # print(openOrder)

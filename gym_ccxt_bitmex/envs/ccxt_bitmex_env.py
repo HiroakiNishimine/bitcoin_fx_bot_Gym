@@ -6,9 +6,10 @@ from gym import utils
 from gym.utils import seeding
 import numpy as np
 import math
-from ccxt_bitmex_util1 import get_State, get_State_forAction, order_Buy, order_Sell, cancel_Orders, withdrawXBT
+from ccxt_bitmex_util1 import get_State, get_State_forAction, order_Buy, order_Sell, cancel_Orders
+from ccxt_bitmex_util2 import withdrawXBT
 import datetime
-
+from time import sleep
 import logging
 import csv
 logger = logging.getLogger(__name__)
@@ -20,6 +21,7 @@ step = 0
 total_step = 0
 flg_BuyFinishedError = 0
 flg_SellFinishedError = 0
+WithdrawCnt = 0                 # withdrawを行った回数
 
 class CcxtBitmexEnv(gym.Env, utils.EzPickle):
     metadata = {'render.modes': ['human']}
@@ -37,7 +39,7 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
         return [seed]
 
     def step(self, action):
-        global start_total_XBT, step, total_step
+        global start_total_XBT, step, total_step, WithdrawCnt
         global flg_BuyFinishedError, flg_SellFinishedError
 
         step = step + 1
@@ -49,7 +51,7 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
                             SellCount, BUY_LotAmount, SELL_LotAmount, PendingCount)
                  
         self.status = 1
-        observation = get_State(flg_BuyFinishedError, flg_SellFinishedError)
+        observation = get_State(flg_BuyFinishedError, flg_SellFinishedError, WithdrawCnt)
         flg_getJsonError = observation[41]
         reward = self._get_reward(observation, step, flg_getJsonError)
 
@@ -191,12 +193,17 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
     
 
     def _get_reward(self, observation, step, flg_getJsonError):
-        global start_total_XBT, prev_reward
+        global start_total_XBT, prev_reward, WithdrawCnt
+        global flg_BuyFinishedError, flg_SellFinishedError
+
+        free_XBT = observation[0] # observation[0] : free XBT
         total_XBT = observation[2] # observation[2] : total XBT
-        # free XBTがstart時点より増えると報酬、減ると罰
+        # total XBTがstart時点より増えると報酬、減ると罰
         reward = (total_XBT - start_total_XBT)* 700000 # rewardが円とほぼ同じになる。
-        if reward < 0: # マイナス方向には5倍の罰を与える
-            reward = 5 * reward
+        if reward < 0: # マイナス方向には6倍の罰を与える
+            reward = 6 * reward
+        if WithdrawCnt > 1:
+            reward = reward + (WithdrawCnt * 3000)  # 引き出した回数分のある程度の報酬（3000円分くらい？）を与える
 
         if flg_getJsonError >= 1:
             reward = prev_reward
@@ -206,26 +213,70 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
             step, total_step, observation[2], reward, (observation[2] - start_total_XBT)))
 
         date = datetime.datetime.now()
-        with open('csv/ccxt_bitmex_log_2018_07_17.csv','a',newline='') as f:
+        with open('csv/ccxt_bitmex_log_2018_07_20.csv','a',newline='') as f:
             writer = csv.writer(f)
             writer.writerow(['time', date, 'total XBT', observation[2], 'reward',reward])
         
-        # if total_XBT > 0.001:
-        #     withdrawXBT()
-        #     reward = reward + 2000 # 1400円ほど引き出すので、2000円分の報酬を与える
+        
+        # 状況確認
+        Bid_price, Ask_price, BuyCount, SellCount, BUY_LotAmount, SELL_LotAmount, flg_getJsonError, PendingCount = get_State_forAction()
+        # オーダーが50件を超えていたら一旦全部のオーダーをキャンセルする
+        if PendingCount > 40:
+            print("オーダーが４０件を超えているので一旦全部のオーダーをキャンセルします。")
+            cancel_Orders()
+
+        # 利益が0.0002XBT以上でていたら、その利益分だけ出金する
+        if total_XBT > 0.0095:
+            if free_XBT < 0.002:
+                #一旦精算
+                print("free XBTは0.002以下なので一旦精算します。")
+                if flg_BuyFinishedError == 0:
+                    if SellCount:
+                        print("action == buy all +")
+                        flg_BuyFinishedError = order_Buy(symbol='BTC/USD', type='limit', side='buy',
+                                amount=SELL_LotAmount, price=Bid_price+0.5)
+                        flg_SellFinishedError = 0
+                else:
+                    print("flg_BuyFinishedError is {}. We can't buy anymore!".format(flg_BuyFinishedError))
+
+                if flg_SellFinishedError == 0:
+                    if BuyCount:
+                        print("action == sell all -")
+                        flg_SellFinishedError = order_Sell(symbol='BTC/USD', type='limit', side='sell',
+                                amount=BUY_LotAmount, price=Ask_price-0.5)
+                        flg_BuyFinishedError = 0
+                else:
+                    print("flg_SellFinishedError is {}. We can't sell anymore!".format(flg_SellFinishedError))
+            else:
+                print("free XBTは0.002以上あるので精算はせずに出金します。")
+
+            # 一時待機
+            sleep(15)
+            # 精算状態を確認
+            observation = get_State(flg_BuyFinishedError, flg_SellFinishedError, WithdrawCnt)
+            free_XBT = observation[0] # observation[0] : free XBT
+            if free_XBT > 0.002:
+                # 出金
+                withdrawXBT()
+                reward = reward + 3000 # 1400円ほど引き出すので、ある程度の報酬（3000円分くらい？）を与える
+                WithdrawCnt = WithdrawCnt + 1
+                print("出金申請しました。")
+            else:
+                print("精算状態を確認しましたが、free XBTが0.002以下なので出金を中止します。")
+                print("BuyCount:{0}, SellCount:{1}, BUY_LotAmount:{2}, SELL_LotAmount:{3}, flg_getJsonError:{4}, PendingCount:{5}".format(BuyCount, SellCount, BUY_LotAmount, SELL_LotAmount, flg_getJsonError, PendingCount))
 
         return reward
 
     def reset(self):
-        global start_total_XBT, step 
+        global start_total_XBT, step, WithdrawCnt
         global flg_BuyFinishedError, flg_SellFinishedError
 
         step = 0
-        self.state = get_State(flg_BuyFinishedError, flg_SellFinishedError)
+        self.state = get_State(flg_BuyFinishedError, flg_SellFinishedError, WithdrawCnt)
         start_total_XBT = self.state[2]
         print("start_total_XBT : {}".format(start_total_XBT))
 
-        with open('csv/ccxt_bitmex_log_2018_07_17.csv','a',newline='') as f:
+        with open('csv/ccxt_bitmex_log_2018_07_20.csv','a',newline='') as f:
             writer = csv.writer(f)
             writer.writerow(['start_total_XBT', start_total_XBT])
 

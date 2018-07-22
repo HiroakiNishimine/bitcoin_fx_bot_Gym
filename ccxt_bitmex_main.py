@@ -52,13 +52,13 @@ if args.lstm:
     model.add(BatchNormalization(momentum=0.8)) 
     model.add(Dense(nb_actions))
     model.add(Activation('linear'))
-    # print('load model...')
-    # model.load_weights(
-    #     '/home/farmhouse/bitmex/bitcoin_fx_bot_fortestNet/weights/dqn_lstm_ccxt_bitmex-v0_weights_2018_7_20_11_42.h5f')
+    print('load model...')
+    model.load_weights(
+        '/home/farmhouse/bitmex/bitcoin_fx_bot/weights/dqn_lstm_ccxt_bitmex-v0_weights_2018_7_22_12_56.h5f')
 if args.mlp:
     model = Sequential()
     model.add(Flatten(input_shape=(1,) + env.observation_space.shape))
-    model.add(Dense(49))
+    model.add(Dense(49))    
     model.add(LeakyReLU(alpha=0.3))
     model.add(BatchNormalization(momentum=0.8))
     model.add(Dense(38))

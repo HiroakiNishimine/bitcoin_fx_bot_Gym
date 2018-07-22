@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 # global variables
 start_total_XBT = 0.0
+start_free_XBT = 0.0
 prev_reward = 0.0
 step = 0
 total_step = 0
@@ -200,7 +201,7 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
     
 
     def _get_reward(self, observation, step, flg_getJsonError):
-        global start_total_XBT, prev_reward, WithdrawCnt
+        global start_total_XBT, start_free_XBT, prev_reward, WithdrawCnt
         global flg_BuyFinishedError, flg_SellFinishedError
 
         free_XBT = observation[0] # observation[0] : free XBT
@@ -208,10 +209,15 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
         liquidationPrice = observation[45] # observation[45] : liquidationPrice
         avgEntryPrice = observation[23] # observation[23] : avgEntryPrice
         # total XBTがstart時点より増えると報酬、減ると罰
-        reward = (total_XBT - start_total_XBT)* 700000 # rewardが円とほぼ同じになる。
+        # free XBTを増やすことも目標に入れると高値で売り戻すことや安値で買い戻すことを覚えるモチベーションとなる。
+        reward =((total_XBT - start_total_XBT) * 700000 + (free_XBT - start_free_XBT) * 700000 ) / 2# rewardが円とほぼ同じになる。
         if reward < 0: # マイナス方向には6倍の罰を与える
-            reward = (5 * reward) + (-10000 / (avgEntryPrice - liquidationPrice)) # (-10000 / (現在のエントリー価格 - 精算価格))
-            print("avgEntryPrice : {0}, liquidationPrice : {1}".format(avgEntryPrice, liquidationPrice))
+            if avgEntryPrice == 0.0 and liquidationPrice == 0.0:
+                reward = 5 * reward 
+            else:
+                reward = (5 * reward) + (-10000 / abs(avgEntryPrice - liquidationPrice)) # (-10000 / (現在のエントリー価格 - 精算価格))
+                print("avgEntryPrice : {0}, liquidationPrice : {1}".format(avgEntryPrice, liquidationPrice))
+
         if WithdrawCnt > 1:
             reward = reward + (WithdrawCnt * 3000)  # 引き出した回数分のある程度の報酬（3000円分くらい？）を与える
         if reward >= 10000:
@@ -232,22 +238,24 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
         
         # 状況確認
         Bid_price, Ask_price, BuyCount, SellCount, BUY_LotAmount, SELL_LotAmount, flg_getJsonError, PendingCount = get_State_forAction()
-        # オーダーが50件を超えていたら一旦全部のオーダーをキャンセルする
-        if PendingCount > 40:
-            print("オーダーが４０件を超えているので一旦全部のオーダーをキャンセルします。")
+        # オーダーが30件を超えていたら一旦全部のオーダーをキャンセルする
+        if PendingCount > 30:
+            print("オーダーが30件を超えているので一旦全部のオーダーをキャンセルします。")
             cancel_Orders()
 
         # 利益が0.0002XBT以上でていたら、その利益分だけ出金する
         if total_XBT > 0.0095:
-            if free_XBT < 0.002:
+            if free_XBT < 0.0022:
                 #一旦精算
-                print("free XBTは0.002以下なので一旦精算します。")
+                print("free XBTは0.0022XBT以下なので一旦精算します。")
+                cancel_Orders() # まずオーダーキャンセル
                 if flg_BuyFinishedError == 0:
                     if SellCount:
                         print("action == buy all +")
                         flg_BuyFinishedError = order_Buy(symbol='BTC/USD', type='limit', side='buy',
                                 amount=SELL_LotAmount, price=Bid_price+0.5)
                         flg_SellFinishedError = 0
+                        sleep(15) # 一時待機
                 else:
                     print("flg_BuyFinishedError is {}. We can't buy anymore!".format(flg_BuyFinishedError))
 
@@ -257,40 +265,41 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
                         flg_SellFinishedError = order_Sell(symbol='BTC/USD', type='limit', side='sell',
                                 amount=BUY_LotAmount, price=Ask_price-0.5)
                         flg_BuyFinishedError = 0
+                        sleep(15) # 一時待機
                 else:
                     print("flg_SellFinishedError is {}. We can't sell anymore!".format(flg_SellFinishedError))
             else:
-                print("free XBTは0.002以上あるので精算はせずに出金します。")
+                print("free XBTは0.0022XBT以上あるので精算はせずに出金します。")
 
-            # 一時待機
-            sleep(15)
             # 精算状態を確認
             observation = get_State(flg_BuyFinishedError, flg_SellFinishedError, WithdrawCnt)
             free_XBT = observation[0] # observation[0] : free XBT
-            if free_XBT > 0.002:
+            if free_XBT > 0.0022:
                 # 出金
                 withdrawXBT()
                 reward = reward + 3000 # 1400円ほど引き出すので、ある程度の報酬（3000円分くらい？）を与える
                 WithdrawCnt = WithdrawCnt + 1
                 print("出金申請しました。")
             else:
-                print("精算状態を確認しましたが、free XBTが0.002以下なので出金を中止します。")
+                print("精算状態を確認しましたが、free XBTが0.0022XBT以下なので出金を中止します。")
                 print("BuyCount:{0}, SellCount:{1}, BUY_LotAmount:{2}, SELL_LotAmount:{3}, flg_getJsonError:{4}, PendingCount:{5}".format(BuyCount, SellCount, BUY_LotAmount, SELL_LotAmount, flg_getJsonError, PendingCount))
 
         return reward
 
     def reset(self):
-        global start_total_XBT, step, WithdrawCnt
+        global start_total_XBT, start_free_XBT, step, WithdrawCnt
         global flg_BuyFinishedError, flg_SellFinishedError
 
         step = 0
         self.state = get_State(flg_BuyFinishedError, flg_SellFinishedError, WithdrawCnt)
+        start_free_XBT = self.state[0]
         start_total_XBT = self.state[2]
         print("start_total_XBT : {}".format(start_total_XBT))
+        print("start_free_XBT : {}".format(start_free_XBT))
 
         with open('csv/ccxt_bitmex_log_2018_07_21.csv','a',newline='') as f:
             writer = csv.writer(f)
-            writer.writerow(['start_total_XBT', start_total_XBT])
+            writer.writerow(['start_total_XBT', start_total_XBT, 'start_free_XBT', start_free_XBT])
 
         return np.array(self.state)
 

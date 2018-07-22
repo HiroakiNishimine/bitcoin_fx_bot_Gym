@@ -16,7 +16,7 @@ def cancel_Orders():
     flg_getJsonError = 0
     obj_Pending, flg_getJsonError = getJson(
         'pending', flg_getJsonError)
-    sleep(1.15)
+    sleep(1)
     if flg_getJsonError == 0:
         CancelPendingOrders(obj_Pending, Symbol='BTC/USD')
 
@@ -49,13 +49,13 @@ def get_State_forAction():
     # JSON取得
     obj_Orderbook, flg_getJsonError = getJson(
         'orderbook', flg_getJsonError)
-    sleep(1.15)
+    sleep(1)
     obj_Position, flg_getJsonError = getJson(
         'position', flg_getJsonError)
-    sleep(1.15)
+    sleep(1)
     obj_Pending, flg_getJsonError = getJson(
         'pending', flg_getJsonError)
-    sleep(1.15)
+    sleep(1)
 
     if flg_getJsonError == 0:
         Ask_price, Ask_amount, Bid_price, Bid_amount, Orderbook_asks_mean, Orderbook_asks_variance, Orderbook_asks_std, Orderbook_bids_mean, Orderbook_bids_variance, Orderbook_bids_std = get_order_info(
@@ -79,25 +79,25 @@ def get_State(flg_BuyFinishedError, flg_SellFinishedError, WithdrawCnt):
     # JSON取得
     obj_Ticker, flg_getJsonError = getJson(
         'ticker', flg_getJsonError)
-    sleep(1.15)
+    sleep(1)
     obj_Markets, flg_getJsonError = getJson(
         'markets', flg_getJsonError)
-    sleep(1.15)
+    sleep(1)
     obj_Balance, flg_getJsonError = getJson(
         'balance', flg_getJsonError)
-    sleep(1.15)
+    sleep(1)
     obj_Position, flg_getJsonError = getJson(
         'position', flg_getJsonError)
-    sleep(1.15)
+    sleep(1)
     obj_Pending, flg_getJsonError = getJson(
         'pending', flg_getJsonError)
-    sleep(1.15)
+    sleep(1)
     obj_Orderbook, flg_getJsonError = getJson(
         'orderbook', flg_getJsonError)
-    sleep(1.15)
+    sleep(1)
     obj_5Orderbook, flg_getJsonError = getJson(
         '5orderbook', flg_getJsonError)
-    sleep(1.15)
+    sleep(1)
 
     # オープンポジションのサイズを取得する(ショートポジションの時はマイナス数字になるし、ロングポジションの時はプラス数字になる)
     # positionsize = bitmex.privateGetPosition(
@@ -287,9 +287,13 @@ def get_State(flg_BuyFinishedError, flg_SellFinishedError, WithdrawCnt):
 
 
 if __name__ == '__main__':
+    Bid_price, Ask_price, BuyCount, SellCount, BUY_LotAmount, SELL_LotAmount, flg_getJsonError, PendingCount = get_State_forAction()
+    BUY_LotAmount = 20
+    flg_SellFinishedError = order_Sell(symbol='BTC/USD', type='market', side='sell',
+                            amount=BUY_LotAmount, price=None)
+
     flg_BuyFinishedError, flg_SellFinishedError, WithdrawCnt = 0, 0, 0
     obs = get_State(flg_BuyFinishedError, flg_SellFinishedError, WithdrawCnt)
     # cancel_Orders()
-    Bid_price, Ask_price, BuyCount, SellCount, BUY_LotAmount, SELL_LotAmount = get_State_forAction()
 
     print(obs)

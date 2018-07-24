@@ -46,15 +46,15 @@ args = parser.parse_args()
 print('Build model...')
 if args.lstm:
     model = Sequential()
-    model.add(CuDNNLSTM(35, input_shape=(1,) + env.observation_space.shape))
-    model.add(Dense(26))
+    model.add(CuDNNLSTM(30, input_shape=(1,) + env.observation_space.shape))
+    model.add(Dense(22))
     model.add(LeakyReLU(alpha=0.3))
     model.add(BatchNormalization(momentum=0.8)) 
     model.add(Dense(nb_actions))
     model.add(Activation('linear'))
     print('load model...')
     model.load_weights(
-        '/home/farmhouse/bitmex/bitcoin_fx_bot/weights/dqn_lstm_ccxt_bitmex-v0_weights_2018_7_22_12_56.h5f')
+        '/home/farmhouse/bitmex/bitcoin_fx_bot/weights/dqn_lstm_ccxt_bitmex-v0_weights_2018_7_25_2_23.h5f')
 if args.mlp:
     model = Sequential()
     model.add(Flatten(input_shape=(1,) + env.observation_space.shape))
@@ -80,7 +80,7 @@ print(model.summary())
 # even the metrics!
 memory = SequentialMemory(limit=50000, window_length=1)
 policy = BoltzmannQPolicy()
-dqn = DQNAgent(model=model, nb_actions=nb_actions, memory=memory, nb_steps_warmup=50,
+dqn = DQNAgent(model=model, nb_actions=nb_actions, memory=memory, nb_steps_warmup=40,
                target_model_update=1e-2, policy=policy)
 dqn.compile(Adam(lr=1e-3), metrics=['mae'])
 

@@ -58,3 +58,11 @@ start_free_XBT : 0.00635083
 * sell all +, buy all -を消去
 * market 買いと売りを追加
 * 不要なstayを消去
+
+2018/07/23 00:19
+start_total_XBT : 0.00634224
+start_free_XBT : 0.00634224
+
+2018/07/23 22:19
+start_total_XBT : 0.00444574
+start_free_XBT : 0.00444574

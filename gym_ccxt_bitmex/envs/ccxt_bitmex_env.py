@@ -31,7 +31,7 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
 
         self.action_space = spaces.Discrete(12)
         self.observation_space = spaces.Box(low=-float('inf'), high=float('inf'), shape=(63,))
-        self.reward_range = [-float('inf'), 10000.]
+        self.reward_range = [0., 1000.]
         self.status = None
         self.seed()
 
@@ -40,7 +40,7 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
         return [seed]
 
     def step(self, action):
-        global start_total_XBT, step, total_step, WithdrawCnt
+        global start_total_XBT, start_free_XBT, step, total_step, WithdrawCnt
         global flg_BuyFinishedError, flg_SellFinishedError
 
         step = step + 1
@@ -52,7 +52,7 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
                             SellCount, BUY_LotAmount, SELL_LotAmount, PendingCount)
                  
         self.status = 1
-        observation = get_State(flg_BuyFinishedError, flg_SellFinishedError, WithdrawCnt)
+        observation = get_State(flg_BuyFinishedError, flg_SellFinishedError, WithdrawCnt, start_total_XBT, start_free_XBT)
         flg_getJsonError = observation[41]
         reward = self._get_reward(observation, step, flg_getJsonError)
 
@@ -72,7 +72,7 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
             print("action == buy")
             if flg_BuyFinishedError == 0:
                 flg_BuyFinishedError = order_Buy(
-                    symbol='BTC/USD', type='limit', side='buy', amount=20.0, price=Bid_price)
+                    symbol='BTC/USD', type='limit', side='buy', amount=23.0, price=Bid_price)
                 flg_SellFinishedError = 0
             else:
                 print("flg_BuyFinishedError is {}. We can't buy anymore!".format(flg_BuyFinishedError))
@@ -84,7 +84,7 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
             print("action == sell")
             if flg_SellFinishedError == 0:
                 flg_SellFinishedError = order_Sell(
-                    symbol='BTC/USD', type='limit', side='sell', amount=20.0, price=Ask_price)
+                    symbol='BTC/USD', type='limit', side='sell', amount=23.0, price=Ask_price)
                 flg_BuyFinishedError = 0
             else:
                 print("flg_SellFinishedError is {}. We can't sell anymore!".format(flg_SellFinishedError))
@@ -93,25 +93,25 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
             print("action == buy +")
             if flg_BuyFinishedError == 0:
                 flg_BuyFinishedError = order_Buy(
-                    symbol='BTC/USD', type='limit', side='buy', amount=20.0, price=Bid_price+0.5)
+                    symbol='BTC/USD', type='limit', side='buy', amount=23.0, price=Bid_price+0.5)
                 flg_SellFinishedError = 0
             else:
                 print("flg_BuyFinishedError is {}. We can't buy anymore!".format(flg_BuyFinishedError))
         
         elif action == 4:
-            print("action == buy -")
+            print("action == buy market")
             if flg_BuyFinishedError == 0:
                 flg_BuyFinishedError = order_Buy(
-                    symbol='BTC/USD', type='limit', side='buy', amount=20.0, price=Bid_price-0.5)
+                    symbol='BTC/USD', type='market', side='buy', amount=23.0, price=None)
                 flg_SellFinishedError = 0
             else:
                 print("flg_BuyFinishedError is {}. We can't buy anymore!".format(flg_BuyFinishedError))
 
         elif action == 5:
-            print("action == sell +")
+            print("action == sell market")
             if flg_SellFinishedError == 0:
                 flg_SellFinishedError = order_Sell(
-                    symbol='BTC/USD', type='limit', side='sell', amount=20.0, price=Ask_price+0.5)
+                    symbol='BTC/USD', type='market', side='sell', amount=23.0, price=None)
                 flg_BuyFinishedError = 0
             else:
                 print("flg_SellFinishedError is {}. We can't sell anymore!".format(flg_SellFinishedError))
@@ -120,7 +120,7 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
             print("action == sell -")
             if flg_SellFinishedError == 0:
                 flg_SellFinishedError = order_Sell(
-                    symbol='BTC/USD', type='limit', side='sell', amount=20.0, price=Ask_price-0.5)
+                    symbol='BTC/USD', type='limit', side='sell', amount=23.0, price=Ask_price-0.5)
                 flg_BuyFinishedError = 0
             else:
                 print("flg_SellFinishedError is {}. We can't sell anymore!".format(flg_SellFinishedError))
@@ -182,19 +182,12 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
         liquidationPrice = observation[45] # observation[45] : liquidationPrice
         avgEntryPrice = observation[23] # observation[23] : avgEntryPrice
         # total XBTがstart時点より増えると報酬、減ると罰
-        # free XBTを増やすことも目標に入れると高値で売り戻すことや安値で買い戻すことを覚えるモチベーションとなる。
-        reward =((total_XBT - start_total_XBT) * 700000 + (free_XBT - start_free_XBT) * 700000 ) / 2# rewardが円とほぼ同じになる。
-        if reward < 0: # マイナス方向には6倍の罰を与える
-            if avgEntryPrice == 0.0 and liquidationPrice == 0.0:
-                reward = 5 * reward 
-            else:
-                reward = (5 * reward) + (-10000 / abs(avgEntryPrice - liquidationPrice)) # (-10000 / (現在のエントリー価格 - 精算価格))
-                print("avgEntryPrice : {0}, liquidationPrice : {1}".format(avgEntryPrice, liquidationPrice))
 
-        if WithdrawCnt > 1:
-            reward = reward + (WithdrawCnt * 3000)  # 引き出した回数分のある程度の報酬（3000円分くらい？）を与える
-        if reward >= 10000:
-            reward = 10000.0 # 上限は10000
+        if total_XBT > start_total_XBT:
+            reward = (total_XBT - start_total_XBT) * 700000
+
+        if reward >= 1000:
+            reward = 1000.0 # 上限は1000
 
         if flg_getJsonError >= 1:
             reward = prev_reward
@@ -204,59 +197,10 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
             step, total_step, observation[2], reward, (observation[2] - start_total_XBT)))
 
         date = datetime.datetime.now()
-        with open('csv/ccxt_bitmex_log_2018_07_21.csv','a',newline='') as f:
+        with open('csv/ccxt_bitmex_log_2018_07_25.csv','a',newline='') as f:
             writer = csv.writer(f)
             writer.writerow(['time', date, 'total XBT', observation[2], 'reward',reward])
         
-        
-        # 状況確認
-        Bid_price, Ask_price, BuyCount, SellCount, BUY_LotAmount, SELL_LotAmount, flg_getJsonError, PendingCount = get_State_forAction()
-        # オーダーが30件を超えていたら一旦全部のオーダーをキャンセルする
-        if PendingCount > 30:
-            print("オーダーが30件を超えているので一旦全部のオーダーをキャンセルします。")
-            cancel_Orders()
-
-        # 利益が0.0002XBT以上でていたら、その利益分だけ出金する
-        if total_XBT > 0.0095:
-            if free_XBT < 0.0022:
-                #一旦精算
-                print("free XBTは0.0022XBT以下なので一旦精算します。")
-                cancel_Orders() # まずオーダーキャンセル
-                if flg_BuyFinishedError == 0:
-                    if SellCount:
-                        print("action == buy all +")
-                        flg_BuyFinishedError = order_Buy(symbol='BTC/USD', type='limit', side='buy',
-                                amount=SELL_LotAmount, price=Bid_price+0.5)
-                        flg_SellFinishedError = 0
-                        sleep(15) # 一時待機
-                else:
-                    print("flg_BuyFinishedError is {}. We can't buy anymore!".format(flg_BuyFinishedError))
-
-                if flg_SellFinishedError == 0:
-                    if BuyCount:
-                        print("action == sell all -")
-                        flg_SellFinishedError = order_Sell(symbol='BTC/USD', type='limit', side='sell',
-                                amount=BUY_LotAmount, price=Ask_price-0.5)
-                        flg_BuyFinishedError = 0
-                        sleep(15) # 一時待機
-                else:
-                    print("flg_SellFinishedError is {}. We can't sell anymore!".format(flg_SellFinishedError))
-            else:
-                print("free XBTは0.0022XBT以上あるので精算はせずに出金します。")
-
-            # 精算状態を確認
-            observation = get_State(flg_BuyFinishedError, flg_SellFinishedError, WithdrawCnt)
-            free_XBT = observation[0] # observation[0] : free XBT
-            if free_XBT > 0.0022:
-                # 出金
-                withdrawXBT()
-                reward = reward + 3000 # 1400円ほど引き出すので、ある程度の報酬（3000円分くらい？）を与える
-                WithdrawCnt = WithdrawCnt + 1
-                print("出金申請しました。")
-            else:
-                print("精算状態を確認しましたが、free XBTが0.0022XBT以下なので出金を中止します。")
-                print("BuyCount:{0}, SellCount:{1}, BUY_LotAmount:{2}, SELL_LotAmount:{3}, flg_getJsonError:{4}, PendingCount:{5}".format(BuyCount, SellCount, BUY_LotAmount, SELL_LotAmount, flg_getJsonError, PendingCount))
-
         return reward
 
     def reset(self):
@@ -264,35 +208,58 @@ class CcxtBitmexEnv(gym.Env, utils.EzPickle):
         global flg_BuyFinishedError, flg_SellFinishedError
 
         step = 0
+        # 状況確認
+        Bid_price, Ask_price, BuyCount, SellCount, BUY_LotAmount, SELL_LotAmount, flg_getJsonError, PendingCount = get_State_forAction()
         #一旦精算
         print("reset : 精算します")
-        cancel_Orders() # まずオーダーキャンセル
+        # まずオーダーキャンセル
+        if PendingCount > 0:
+                print("action == cancel orders")
+                cancel_Orders()
+        else:
+            print("no cancel orders.")
+
         if flg_BuyFinishedError == 0:
             if SellCount:
                 print("action == buy all +")
-                flg_BuyFinishedError = order_Buy(symbol='BTC/USD', type='limit', side='buy',
-                        amount=SELL_LotAmount, price=Bid_price+0.5)
+                flg_BuyFinishedError = order_Buy(symbol='BTC/USD', type='market', side='buy',
+                        amount=SELL_LotAmount, price=None)
                 flg_SellFinishedError = 0
-                sleep(15) # 一時待機
+                sleep(10) # 一時待機
         else:
             print("flg_BuyFinishedError is {}. We can't buy anymore!".format(flg_BuyFinishedError))
 
         if flg_SellFinishedError == 0:
             if BuyCount:
                 print("action == sell all -")
-                flg_SellFinishedError = order_Sell(symbol='BTC/USD', type='limit', side='sell',
-                        amount=BUY_LotAmount, price=Ask_price-0.5)
+                flg_SellFinishedError = order_Sell(symbol='BTC/USD', type='market', side='sell',
+                        amount=BUY_LotAmount, price=None)
                 flg_BuyFinishedError = 0
-                sleep(15) # 一時待機
+                sleep(10) # 一時待機
         else:
             print("flg_SellFinishedError is {}. We can't sell anymore!".format(flg_SellFinishedError))
-        self.state = get_State(flg_BuyFinishedError, flg_SellFinishedError, WithdrawCnt)
+
+        # 状況確認
+        observation = get_State(flg_BuyFinishedError, flg_SellFinishedError, WithdrawCnt, start_total_XBT, start_free_XBT)
+        free_XBT = observation[0] # observation[0] : free XBT
+        total_XBT = observation[2] # observation[2] : total XBT
+
+        # 利益が0.0002XBT以上でていたら、その利益分だけ出金する
+        if total_XBT > 0.0095:
+            if free_XBT > 0.0022:
+                # 出金
+                withdrawXBT()
+                WithdrawCnt = WithdrawCnt + 1
+                print("出金申請しました。")
+
+
+        self.state = get_State(flg_BuyFinishedError, flg_SellFinishedError, WithdrawCnt, start_total_XBT, start_free_XBT)
         start_free_XBT = self.state[0]
         start_total_XBT = self.state[2]
         print("start_total_XBT : {}".format(start_total_XBT))
         print("start_free_XBT : {}".format(start_free_XBT))
 
-        with open('csv/ccxt_bitmex_log_2018_07_21.csv','a',newline='') as f:
+        with open('csv/ccxt_bitmex_log_2018_07_25.csv','a',newline='') as f:
             writer = csv.writer(f)
             writer.writerow(['start_total_XBT', start_total_XBT, 'start_free_XBT', start_free_XBT])
 

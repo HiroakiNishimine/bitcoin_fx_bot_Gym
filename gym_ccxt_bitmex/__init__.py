@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 register(
     id='ccxt_bitmex-v0',
     entry_point='gym_ccxt_bitmex.envs:CcxtBitmexEnv',
-    timestep_limit=40,
-    reward_threshold=30.0,
+    timestep_limit=100,
+    reward_threshold=100.0,
     nondeterministic = True,
 )

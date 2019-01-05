@@ -32,6 +32,6 @@ $ python ccxt_bitmex_main.py --mlp 1
 ```
 
 # Caution
-* ccxt_bitmex_util2.pyに書いてあるapi key ,などは西峯のキーなので変えて使ってください。 
+* ccxt_bitmex_util2.pyに書いてあるapi keyを自分のものに変えて使ってください。 
 * オプションをつけずに実行すれば、LSTMが採用されます。
 * Ubuntu 16.04, CUDA = 8.0, CUDNN = 6.0, TensorFlow-GPU = 1.4, Keras = 2.1.6で動作確認をしています。

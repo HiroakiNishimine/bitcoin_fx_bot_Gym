@@ -26,15 +26,9 @@ def bitmex():
   
   bitmex = ccxt.bitmex({
 
-      #APIキーをご自分のものに差し替えてください(aki-first-apikey)
-    #    'apiKey': 'RsJtux8sro3BloRYnrFYSK5G',
-    #    'secret': 'jL4J5PUeGt99xMMuXD0VWwZ9LMVjm0-FfUMRb_mX6HLaR32E',
-      #APIキーをご自分のものに差し替えてください(aki-withdrawEnabled-apikey)
-    #    'apiKey': 'exKSJp5tSE2ejQZc6VLikPIp',
-    #    'secret': 'wjGtXca0MoE18OY47Hz0-GtuhZO_q3XJ3PPKnNgLRyuWAp4z',
-      #APIキーをご自分のものに差し替えてください(aki-testnet-apikey)
-       'apiKey': 'TE-RZiKawBkCjzCeeZRlmYqk',
-       'secret': 'oWtAaqTrgSL1evIaUp78IHqydVP3f48H5Q0LI2wV89HjsWo3',
+      #APIキーをご自分のものに差し替えてください
+      'apiKey': '000000000000000000000',
+      'secret': '0000000000000000000000000000000000'
 
       })
   

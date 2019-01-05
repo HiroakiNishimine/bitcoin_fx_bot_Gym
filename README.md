@@ -1,4 +1,5 @@
 # gym-ccxt_bitmex
+Open AI Gymでbitmexにおいて強化学習で取引を行うソフトです。
 
 # Requirements
 * Python 3

@@ -1,8 +1,5 @@
 # gym-ccxt_bitmex
 
-
-## ccxt_bitmex
-
 # Requirements
 * Python 3
 * CUDA >= 8.0
